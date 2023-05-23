@@ -110,6 +110,16 @@ export function convertToNeon(staffBasedMei: string): string {
       sb.setAttribute('facs', staff.getAttribute('facs'));
       sb.setAttribute('xml:id', staff.getAttribute('xml:id'));
 
+      // remove temporary text content
+      for (const syllable of layer.getElementsByTagName('syllable')) {
+        const syl = syllable.getElementsByTagName('syl')[0];
+        if (syl) {
+          if (syl.textContent.trim() === '&#x25CA;') {
+            syl.textContent = '';
+          }
+        }
+      }
+
       // Handle custos
       let custos: Element = undefined;
       if (
@@ -376,33 +386,28 @@ export function convertToVerovio(sbBasedMei: string): string {
     }
   }
 
-  if (hasEmptySyllable) {
-    Notification.queueNotification(
-      'This file contains syllable(s) without neume!',
-      'warning',
-      emptySyllableInfo,
-    );
-  }
-  if (hasEmptyNeume) {
-    Notification.queueNotification(
-      'This file contains neume(s) without neume component!',
-      'warning',
-      emptyNeumeInfo,
-    );
-  }
-  if (hasInvalidDivLine) {
-    Notification.queueNotification(
-      'This file contains divLine(s) inside empty syllable(s)!',
-      'warning',
-      invalidDivLineInfo,
-    );
-  }
-  if (hasInvalidAccid) {
-    Notification.queueNotification(
-      'This file contains accid(s) inside empty syllable(s)!',
-      'warning',
-      invalidAccidInfo,
-    );
+  // Check syllable without neume
+  const syllables = Array.from(mei.getElementsByTagName('syllable'));
+  for (const syllable of syllables) {
+    if (syllable.getElementsByTagName('neume').length === 0) {
+      // syllable.remove();
+      const id = syllable.getAttribute('xml:id');
+      Notification.queueNotification(
+        `This file contains a syllable without neume!<br/>ID: ${id}`,
+        'warning',
+      );
+    }
+
+    // (moved from verovio iomei.cpp)
+    // We want bounding boxes to appear even if there is no text associated with
+    // the <syl>. In order to draw the bounding box, we add temporary text to <syl>.
+    // We may need a better way to do this
+    const syl = syllable.getElementsByTagName('syl')[0];
+    if (syl) {
+      if (syl.textContent.trim() === '') {
+        syl.textContent = '&#x25CA;';
+      }
+    }
   }
 
   // Go section by section just in case
