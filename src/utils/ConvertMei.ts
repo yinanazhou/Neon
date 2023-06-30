@@ -110,16 +110,6 @@ export function convertToNeon(staffBasedMei: string): string {
       sb.setAttribute('facs', staff.getAttribute('facs'));
       sb.setAttribute('xml:id', staff.getAttribute('xml:id'));
 
-      // remove temporary text content
-      for (const syllable of layer.getElementsByTagName('syllable')) {
-        const syl = syllable.getElementsByTagName('syl')[0];
-        if (syl) {
-          if (syl.textContent.trim() === '&#x25CA;') {
-            syl.textContent = '';
-          }
-        }
-      }
-
       // Handle custos
       let custos: Element = undefined;
       if (
@@ -397,7 +387,6 @@ export function convertToVerovio(sbBasedMei: string): string {
         'warning',
       );
     }
-
   }
 
   // Go section by section just in case
