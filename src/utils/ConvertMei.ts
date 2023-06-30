@@ -40,16 +40,6 @@ export function convertStaffToSb(staffBasedMei: string): string {
       sb.setAttribute('n', staff.getAttribute('n'));
       sb.setAttribute('facs', staff.getAttribute('facs'));
       sb.setAttribute('xml:id', staff.getAttribute('xml:id'));
-      
-      // remove temporary text content
-      for (const syllable of layer.getElementsByTagName('syllable')) {
-        const syl = syllable.getElementsByTagName('syl')[0];
-        if (syl) {
-          if (syl.textContent.trim() === '&#x25CA;') {
-            syl.textContent = '';
-          }
-        }
-      }
 
       // Handle custos
       let custos: Element = undefined;
