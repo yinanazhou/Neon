@@ -355,6 +355,7 @@ export function initNavbar (neonView: NeonView): void {
                 attrValue: ''
               }
             });
+            param.push(...addSylAction([syllable, precedesSyllable]));
           }
           else if (precedesSyllable.getAttribute('follows') != '#' + syllable.getAttribute('xml:id')) {
             hasInvalidSyllables = true;
@@ -374,8 +375,8 @@ export function initNavbar (neonView: NeonView): void {
                 attrValue: ''
               }
             });
+            param.push(...addSylAction([syllable, precedesSyllable]));
           }
-          param.push(...addSylAction([syllable, precedesSyllable]));
         }
         else if (syllable.hasAttribute('follows')) {
           const followsSyllable = syllables.find(element => element.getAttribute('xml:id') === syllable.getAttribute('follows').substring(1));
@@ -389,6 +390,7 @@ export function initNavbar (neonView: NeonView): void {
                 attrValue: ''
               }
             });
+            param.push(...addSylAction([syllable, followsSyllable]));
           }
           else if (followsSyllable.getAttribute('precedes') != '#' + syllable.getAttribute('xml:id')) {
             hasInvalidSyllables = true;
@@ -408,8 +410,8 @@ export function initNavbar (neonView: NeonView): void {
                 attrValue: ''
               }
             });
+            param.push(...addSylAction([syllable, followsSyllable]));
           }
-          param.push(...addSylAction([syllable, followsSyllable]));
         }
       }
 
