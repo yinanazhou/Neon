@@ -4,32 +4,37 @@ import * as Notification from '../utils/Notification';
 
 // Note:
 // The file sent to Verovio has the following structure (ConvertToVerovio()):
-// <section>
-//   <pb/>
-//   <section type="neon-neume-line">
-//     <staff/>
-//      <layer/>
-//        content
-//   </section>
-//   <section type="neon-neume-line">
-//     <staff/>
-//      <layer/>
-//        content
-//   </section>
-//   ...
-// </section>
+// /score
+//   /section
+//     /pb
+//     /section@type="neon-neume-line" (i.e., measure)
+//       /staff
+//         /layer
+//     /sb
+//     /section@type="neon-neume-line" (i.e., measure)
+//       /staff
+//         /layer
+// 
+// Verovio will read the resulting file into the following structure (inside Verovio):
+// /score
+// /system
+//   /secb
+//   /section@type="neon-neume-line" (i.e., measure)
+//     /staff
+// /system
+//   /section@type="neon-neume-line" (i.e., measure)
+//     /staff
 // 
 // The file received needs to be converted back to the following structure (ConvertToNeon()):
-// <section>
-//   <staff/>
-//     <layer/>
-//      <pb/>
-//      <sb/>
-//      staff content <syllable> etc.
-//      <sb/>
-//      staff content <syllable> etc.
-//      ...
-// </section>
+// /section
+//   /staff
+//     /layer
+//       /pb
+//       /sb
+//       /staff children
+//       /sb
+//       /staff children
+
 
 export function zip<T> (array1: Array<T>, array2: Array<T>): Array<T> {
   const result = [];
@@ -54,9 +59,11 @@ export function convertToNeon(staffBasedMei: string): string {
 
   const sections = Array.from(mei.querySelectorAll('section:not([type="neon-neume-line"])'));
   for (const section of sections) {
-    // Remove direct children pb elements within section
+    // Remove direct children pb & sb elements within section
     const pbs = section.querySelectorAll('pb');
     pbs.forEach(pb => pb.remove());
+    const sbs = section.querySelectorAll('sb');
+    sbs.forEach(sb => sb.remove());
 
     const newStaff = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'staff');
     const newLayer = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'layer');
@@ -387,6 +394,11 @@ export function convertToVerovio(sbBasedMei: string): string {
       for (let i = 0; i < sbs.length; i++) {
         const currentSb = sbs[i];
         const nextSb = (sbs.length > i + 1) ? sbs[i + 1] : undefined;
+        
+        const newSb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'sb');
+        newSb.setAttribute('xml:id', 'm-' + uuidv4());
+        newSb.setAttribute('facs', currentSb.getAttribute('facs'));
+
 
         const newSection = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'section');
         newSection.setAttribute('type', 'neon-neume-line');
@@ -435,6 +447,7 @@ export function convertToVerovio(sbBasedMei: string): string {
           }
         }
 
+        section.insertBefore(newSb, staff);
         section.insertBefore(newSection, staff);
       }
       staff.remove();
