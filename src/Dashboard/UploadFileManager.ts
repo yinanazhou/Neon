@@ -71,9 +71,13 @@ class UploadFileManager {
       const facsimile = mei.querySelector('facsimile');
       facsimile.setAttribute('xml:id', 'm-' + uuidv4());
       const surface = mei.querySelector('surface');
-      surface.setAttribute('xml:id', 'm-' + uuidv4());
+      const surfaceId = 'm-' + uuidv4();
+      surface.setAttribute('xml:id', surfaceId);
       surface.setAttribute('lrx', lrx.toString());
       surface.setAttribute('lry', lry.toString());
+      const zone = mei.querySelector('zone');
+      const zoneId = 'm-' + uuidv4();
+      zone.setAttribute('xml:id', zoneId);
 
       const mdiv = mei.querySelector('mdiv');
       mdiv.setAttribute('xml:id', 'm-' + uuidv4());
@@ -87,6 +91,12 @@ class UploadFileManager {
       staffDef.setAttribute('xml:id', 'm-' + uuidv4());
       const section = mei.querySelector('section');
       section.setAttribute('xml:id', 'm-' + uuidv4());
+      const pb = mei.querySelector('pb');
+      pb.setAttribute('xml:id', 'm-' + uuidv4());
+      pb.setAttribute('facs', '#' + surfaceId);
+      const sb = mei.querySelector('sb');
+      sb.setAttribute('xml:id', 'm-' + uuidv4());
+      sb.setAttribute('facs', '#' + zoneId);
 
       const meiFileContent = vkbeautify.xml(serializer.serializeToString(meiDoc));
       const meiBlob = new Blob([meiFileContent], { type: 'text/xml' });
