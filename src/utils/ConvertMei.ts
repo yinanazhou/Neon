@@ -441,7 +441,7 @@ export function convertToVerovio(sbBasedMei: string): string {
           const facsChildren = collectFacsChildren(lastElement, []);
           for (const child of facsChildren) {
             const zone = zones.find(z => z.getAttribute('xml:id') == child.getAttribute('facs').slice(1));
-            if (zone) {
+            if (zone && zones.length > 1) {
               zone.parentNode.removeChild(zone);
             }
           }
