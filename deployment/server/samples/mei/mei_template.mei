@@ -14,7 +14,7 @@
     <music>
         <facsimile type="transcription">
             <surface>
-                <zone lrx="3830" lry="712" rotate="0.0" ulx="623" uly="498"/>
+                <zone rotate="0.0"/>
             </surface>
         </facsimile>
         <body>
