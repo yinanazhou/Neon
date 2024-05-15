@@ -2,39 +2,9 @@ import { uuidv4 } from './random';
 import * as vkbeautify from 'vkbeautify';
 import * as Notification from '../utils/Notification';
 
-// Note:
-// The file sent to Verovio has the following structure (ConvertToVerovio()):
-// /score
-//   /section
-//     /pb
-//     /section@type="neon-neume-line" (i.e., measure)
-//       /staff
-//         /layer
-//     /sb
-//     /section@type="neon-neume-line" (i.e., measure)
-//       /staff
-//         /layer
-// 
-// Verovio will read the resulting file into the following structure (inside Verovio):
-// /score
-// /system
-//   /secb
-//   /section@type="neon-neume-line" (i.e., measure)
-//     /staff
-// /system
-//   /section@type="neon-neume-line" (i.e., measure)
-//     /staff
-// 
-// The file received needs to be converted back to the following structure (ConvertToNeon()):
-// /section
-//   /staff
-//     /layer
-//       /pb
-//       /sb
-//       /staff children
-//       /sb
-//       /staff children
-
+// For details about the file conversion, 
+// refer to this link:
+// https://github.com/DDMAL/Neon/wiki/Neon%E2%80%90Verovio-File-Conversion
 
 export function zip<T> (array1: Array<T>, array2: Array<T>): Array<T> {
   const result = [];
