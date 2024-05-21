@@ -528,7 +528,7 @@ function addSylAction(syllables: Element[]): Array<EditorAction> {
   const param = new Array<EditorAction>();
 
   for (const syllable of syllables) {
-    if (!syllable.getElementsByTagName('syl').length) {
+    if (syllable && !syllable.getElementsByTagName('syl').length) {
       param.push({
         action: 'setText',
         param: {
