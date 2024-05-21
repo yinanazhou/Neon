@@ -241,14 +241,18 @@ export function initGroupingListeners (): void {
   try {
     document.getElementById('groupNeumes').addEventListener('click', () => {
       if (containsLinked(SelectTools.getSelectionType())) return;
-      const elementIds = getIds();
+      const elementIds = getIds().filter(e =>
+        document.getElementById(e).classList.contains('neume')
+      );
       groupingAction('group', 'neume', elementIds);
     });
   } catch (e) {}
 
   try {
     document.getElementById('groupNcs').addEventListener('click', () => {
-      const elementIds = getIds();
+      const elementIds = getIds().filter(e =>
+        document.getElementById(e).classList.contains('nc')
+      );
       groupingAction('group', 'nc', elementIds);
     });
   } catch (e) {}
