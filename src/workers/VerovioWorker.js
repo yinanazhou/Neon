@@ -39,31 +39,23 @@ function handleNeonEvent (evt) {
   postMessage(result);
 }
 
-var Module = {
-  onRuntimeInitialized: () => {
+importScripts('https://www.verovio.org/javascript/develop/verovio-toolkit-wasm.js');
 
-    toolkit = new verovio.toolkit();
-    toolkit.setOptions({
-      inputFrom: 'mei',
-      footer: 'none',
-      header: 'none',
-      pageMarginLeft: 0,
-      pageMarginTop: 0,
-      font: 'Bravura',
-      useFacsimile: false,
-    });
-    console.debug('READY');
-    onmessage = handleNeonEvent;
-    for (const message of backlog) {
-      handleNeonEvent(message);
-    }
+verovio.module.onRuntimeInitialized = () => {
+
+  toolkit = new verovio.toolkit();
+  toolkit.setOptions( {
+    inputFrom: 'mei',
+    footer: 'none',
+    header: 'none',
+    pageMarginLeft: 0,
+    pageMarginTop: 0,
+    font: 'Bravura',
+    useFacsimile: false,
+  });
+  console.debug('READY');
+  onmessage = handleNeonEvent;
+  for (const message of backlog) {
+    handleNeonEvent(message);
   }
 };
-
-importScripts('../assets/js/verovio-toolkit.js');
-
-function tempHandler (evt) {
-  backlog.push(evt);
-}
-
-onmessage = tempHandler;
