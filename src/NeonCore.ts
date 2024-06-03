@@ -206,7 +206,7 @@ class NeonCore {
             }
           }).then(data => {
             // Check if the MEI file is sb-based. If so, convert to staff-based.
-            if (!data.match(/<section type="neon-neume-line">/)) {
+            if (!data.match(/.*section.*type="neon-neume-line".*/)) {
               data = convertToVerovio(data);
             }
 
