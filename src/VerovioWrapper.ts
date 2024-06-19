@@ -7,7 +7,7 @@ import { VerovioMessage } from './Types';
 export default class VerovioWrapper {
   verovioWorker: Worker;
   constructor () {
-    this.verovioWorker = new Worker(__ASSET_PREFIX__ + 'workers/VerovioWorker.js');
+    this.verovioWorker = new Worker(__ASSET_PREFIX__ + 'workers/VerovioWorker-dev.js');
   }
 
   /**
