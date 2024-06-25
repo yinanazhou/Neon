@@ -1,5 +1,5 @@
 import { VerovioMessage, VerovioResponse } from '../src/Types';
-import * as verovio from 'verovio-dev';
+import verovio from '../assets/js/verovio-toolkit-wasm.js'
 
 /**
  * Wrapper to be used during tests when Web Workers are not available.

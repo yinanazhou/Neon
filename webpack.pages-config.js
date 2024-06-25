@@ -42,7 +42,6 @@ module.exports = {
     extensions: ['.ts', '.js'],
   },
   externals: {
-    'verovio-dev': 'verovio',
     d3: 'd3',
   },
   plugins: [
