@@ -2,7 +2,7 @@ import { uuidv4 } from './random';
 import * as vkbeautify from 'vkbeautify';
 import * as Notification from '../utils/Notification';
 
-// For details about the file conversion, 
+// For details about the file conversion,
 // refer to this link:
 // https://github.com/DDMAL/Neon/wiki/Neon%E2%80%90Verovio-File-Conversion
 
@@ -52,7 +52,7 @@ export function convertToNeon(staffBasedMei: string): string {
     const neonNeumeLineSections = Array.from(section.querySelectorAll('section[type="neon-neume-line"]'));
     let nStaff = 0;
     let lastCb: Element = null;
-    
+
     for (const neonNeumeLineSection of neonNeumeLineSections) {
       nStaff += 1;
       const staff = neonNeumeLineSection.querySelector('staff');
@@ -159,7 +159,7 @@ export function convertToNeon(staffBasedMei: string): string {
     let lrx = Infinity; let lry = 0; let ulx = 0; let uly = Infinity;
 
     elements.forEach((element) => {
-      const zone = Array.from(surface.children).find(zone => 
+      const zone = Array.from(surface.children).find(zone =>
         zone.getAttribute('xml:id') === element.getAttribute('facs').slice(1));
       lrx = Math.min(lrx, parseInt(zone.getAttribute('lrx')));
       lry = Math.max(lry, parseInt(zone.getAttribute('lry')));
@@ -188,7 +188,7 @@ export function getSyllableText (syllable: Element): string {
  * Check if zone is all-zero or not linked with glyphs
  */
 export function isInvalidBBox (mei: HTMLElement, zone: Element): [boolean, Element?] {
-  const isAllZero = (parseInt(zone.getAttribute('lrx')) === 0) && 
+  const isAllZero = (parseInt(zone.getAttribute('lrx')) === 0) &&
     (parseInt(zone.getAttribute('lry')) === 0) &&
     (parseInt(zone.getAttribute('ulx')) === 0) &&
     (parseInt(zone.getAttribute('uly')) === 0);
@@ -241,12 +241,12 @@ export function convertToVerovio(sbBasedMei: string): string {
     colLayout.parentNode.removeChild(colLayout);
   }
 
-  // Check syllable without neume 
+  // Check syllable without neume
   const syllables = Array.from(mei.getElementsByTagName('syllable'));
   let hasEmptySyllable = false;
   let hasEmptyNeume = false;
-  let emptySyllableInfo = 'The following syllable(s) have no neumes: \n\n'; 
-  let emptyNeumeInfo = 'The following neume(s) have no neume components: \n\n'; 
+  let emptySyllableInfo = 'The following syllable(s) have no neumes: \n\n';
+  let emptyNeumeInfo = 'The following neume(s) have no neume components: \n\n';
   for (const syllable of syllables) {
     if (syllable.getElementsByTagName('neume').length === 0) {
       hasEmptySyllable = true;
@@ -264,8 +264,11 @@ export function convertToVerovio(sbBasedMei: string): string {
         // To be removed in the future:
         // If nc has a @curve value, add a <liquescent> element
         for (const nc of ncs) {
-          if (nc.hasAttribute('curve')) {
-            const liq = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'liquescent');
+          if (nc.hasAttribute('curve') && nc.children.length === 0) {
+            const liq = meiDoc.createElementNS(
+              'http://www.music-encoding.org/ns/mei',
+              'liquescent'
+            );
             liq.setAttribute('xml:id', 'm-' + uuidv4());
             nc.appendChild(liq);
           }
@@ -364,7 +367,7 @@ export function convertToVerovio(sbBasedMei: string): string {
       for (let i = 0; i < sbs.length; i++) {
         const currentSb = sbs[i];
         const nextSb = (sbs.length > i + 1) ? sbs[i + 1] : undefined;
-        
+
         const newSb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'sb');
         newSb.setAttribute('xml:id', 'm-' + uuidv4());
         newSb.setAttribute('facs', currentSb.getAttribute('facs'));
@@ -390,7 +393,7 @@ export function convertToVerovio(sbBasedMei: string): string {
           }
           newStaff.setAttribute('type', 'column' + nCol.toString());
         }
-        
+
         const newLayer = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'layer');
         newLayer.setAttribute('n', '1');
         newLayer.setAttribute('xml:id', 'm-' + uuidv4());
@@ -621,4 +624,4 @@ function collectFacsChildren(element: Element, array: Element[]): Element[] {
     collectFacsChildren(child, array);
   }
   return array;
-} 
+}
