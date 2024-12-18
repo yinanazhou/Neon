@@ -241,14 +241,18 @@ export function initGroupingListeners (): void {
   try {
     document.getElementById('groupNeumes').addEventListener('click', () => {
       if (containsLinked(SelectTools.getSelectionType())) return;
-      const elementIds = getIds();
+      const elementIds = getIds().filter(e =>
+        document.getElementById(e).classList.contains('neume')
+      );
       groupingAction('group', 'neume', elementIds);
     });
   } catch (e) {}
 
   try {
     document.getElementById('groupNcs').addEventListener('click', () => {
-      const elementIds = getIds();
+      const elementIds = getIds().filter(e =>
+        document.getElementById(e).classList.contains('nc')
+      );
       groupingAction('group', 'nc', elementIds);
     });
   } catch (e) {}
@@ -477,9 +481,9 @@ function toggleLinkedSyllables() {
     // Associate syllables. Will need to find which is first. Use staves.
     const syllable0 = document.getElementById(elementIds[0]);
     const syllable1 = document.getElementById(elementIds[1]);
-    const staff0 = syllable0.closest('.staff');
-    const staff1 = syllable1.closest('.staff');
-    const staffChildren = Array.from(staff0.parentElement.children).filter((elem: HTMLElement) => elem.classList.contains('staff'));
+    const staff0 = syllable0.closest('.system');
+    const staff1 = syllable1.closest('.system');
+    const staffChildren = Array.from(staff0.parentElement.children).filter((elem: HTMLElement) => elem.classList.contains('system'));
 
     let firstSyllable, secondSyllable;
     // Determine first syllable comes first by staff

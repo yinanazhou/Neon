@@ -2,6 +2,10 @@ import { uuidv4 } from './random';
 import * as vkbeautify from 'vkbeautify';
 import * as Notification from '../utils/Notification';
 
+// For details about the file conversion,
+// refer to this link:
+// https://github.com/DDMAL/Neon/wiki/Neon%E2%80%90Verovio-File-Conversion
+
 export function zip<T> (array1: Array<T>, array2: Array<T>): Array<T> {
   const result = [];
   for (let i = 0; i < (array1.length > array2.length ? array2.length : array1.length); i++) {
@@ -23,7 +27,14 @@ export function convertToNeon(staffBasedMei: string): string {
   const mei = meiDoc.documentElement;
   let nCol = 0;
 
-  for (const section of mei.getElementsByTagName('section')) {
+  const sections = Array.from(mei.querySelectorAll('section:not([type="neon-neume-line"])'));
+  for (const section of sections) {
+    // Remove direct children pb & sb elements within section
+    const pbs = section.querySelectorAll('pb');
+    pbs.forEach(pb => pb.remove());
+    const sbs = section.querySelectorAll('sb');
+    sbs.forEach(sb => sb.remove());
+
     const newStaff = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'staff');
     const newLayer = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'layer');
     newStaff.setAttribute('n', '1');
@@ -31,20 +42,25 @@ export function convertToNeon(staffBasedMei: string): string {
     newStaff.appendChild(newLayer);
 
     // Add <pb>
-    const surface = mei.getElementsByTagName('surface')[0];
+    const surface = mei.querySelector('surface');
     const surfaceId = surface.getAttribute('xml:id');
     const pb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'pb');
     pb.setAttribute('xml:id', 'm-' + uuidv4());
     pb.setAttribute('facs', '#' + surfaceId);
     newLayer.appendChild(pb);
 
-    const staves = Array.from(section.getElementsByTagName('staff'));
+    const neonNeumeLineSections = Array.from(section.querySelectorAll('section[type="neon-neume-line"]'));
     let nStaff = 0;
     let lastCb: Element = null;
-    
-    for (const staff of staves) {
+
+    for (const neonNeumeLineSection of neonNeumeLineSections) {
       nStaff += 1;
-      const layer = staff.getElementsByTagName('layer')[0];
+      const staff = neonNeumeLineSection.querySelector('staff');
+      if (!staff) {
+        neonNeumeLineSection.remove();
+        continue;
+      }
+      const layer = staff.querySelector('layer');
 
       // if staff has a new type value,
       // add cb before sb
@@ -82,7 +98,7 @@ export function convertToNeon(staffBasedMei: string): string {
       while (layer.firstElementChild !== null) {
         newLayer.appendChild(layer.firstElementChild);
       }
-      staff.remove();
+      neonNeumeLineSection.remove();
     }
 
     // Calculate and add zone for the last cb in the section
@@ -94,7 +110,7 @@ export function convertToNeon(staffBasedMei: string): string {
 
   // Add <colLayout>
   if (nCol) {
-    const scoreDef = mei.getElementsByTagName('scoreDef')[0];
+    const scoreDef = mei.querySelector('scoreDef');
     const colLayout = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'colLayout');
     colLayout.setAttribute('xml:id', 'm-' + uuidv4());
     colLayout.setAttribute('n', nCol.toString());
@@ -143,7 +159,7 @@ export function convertToNeon(staffBasedMei: string): string {
     let lrx = Infinity; let lry = 0; let ulx = 0; let uly = Infinity;
 
     elements.forEach((element) => {
-      const zone = Array.from(surface.children).find(zone => 
+      const zone = Array.from(surface.children).find(zone =>
         zone.getAttribute('xml:id') === element.getAttribute('facs').slice(1));
       lrx = Math.min(lrx, parseInt(zone.getAttribute('lrx')));
       lry = Math.max(lry, parseInt(zone.getAttribute('lry')));
@@ -156,7 +172,7 @@ export function convertToNeon(staffBasedMei: string): string {
 }
 
 export function getSyllableText (syllable: Element): string {
-  const syl = syllable.getElementsByTagName('syl')[0]?.childNodes[0];
+  const syl = syllable.querySelector('syl')?.childNodes[0];
   let sylText: string;
   if (syl) {
     sylText = syl.nodeValue;
@@ -172,7 +188,7 @@ export function getSyllableText (syllable: Element): string {
  * Check if zone is all-zero or not linked with glyphs
  */
 export function isInvalidBBox (mei: HTMLElement, zone: Element): [boolean, Element?] {
-  const isAllZero = (parseInt(zone.getAttribute('lrx')) === 0) && 
+  const isAllZero = (parseInt(zone.getAttribute('lrx')) === 0) &&
     (parseInt(zone.getAttribute('lry')) === 0) &&
     (parseInt(zone.getAttribute('ulx')) === 0) &&
     (parseInt(zone.getAttribute('uly')) === 0);
@@ -197,9 +213,12 @@ export function convertToVerovio(sbBasedMei: string): string {
   const mei = meiDoc.documentElement;
   let hasCols = false;
 
+  const facsimile = mei.querySelector('facsimile');
+  facsimile.setAttribute('type', 'transcription');
+
   // Remove all-zero zones
   // Remove zones not linked with glyphs
-  const surface = mei.getElementsByTagName('surface')[0];
+  const surface = mei.querySelector('surface');
   let hasInvalidBBox = false;
   const zones = Array.from(surface.getElementsByTagName('zone'));
   for (const zone of zones) {
@@ -216,24 +235,18 @@ export function convertToVerovio(sbBasedMei: string): string {
 
   // Check if there is <colLayout> element and remove them
   // There will only be one <colLayout> element
-  const colLayout = mei.getElementsByTagName('colLayout')[0];
+  const colLayout = mei.querySelector('colLayout');
   if (colLayout) {
     hasCols = true;
     colLayout.parentNode.removeChild(colLayout);
   }
 
-  // Check if there are <pb> elements and remove them
-  const pageBegins = Array.from(mei.getElementsByTagName('pb'));
-  for (const pb of pageBegins) {
-    pb.parentNode.removeChild(pb);
-  }
-
-  // Check syllable without neume 
+  // Check syllable without neume
   const syllables = Array.from(mei.getElementsByTagName('syllable'));
   let hasEmptySyllable = false;
   let hasEmptyNeume = false;
-  let emptySyllableInfo = 'The following syllable(s) have no neumes: \n\n'; 
-  let emptyNeumeInfo = 'The following neume(s) have no neume components: \n\n'; 
+  let emptySyllableInfo = 'The following syllable(s) have no neumes: \n\n';
+  let emptyNeumeInfo = 'The following neume(s) have no neume components: \n\n';
   for (const syllable of syllables) {
     if (syllable.getElementsByTagName('neume').length === 0) {
       hasEmptySyllable = true;
@@ -251,8 +264,11 @@ export function convertToVerovio(sbBasedMei: string): string {
         // To be removed in the future:
         // If nc has a @curve value, add a <liquescent> element
         for (const nc of ncs) {
-          if (nc.hasAttribute('curve')) {
-            const liq = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'liquescent');
+          if (nc.hasAttribute('curve') && nc.children.length === 0) {
+            const liq = meiDoc.createElementNS(
+              'http://www.music-encoding.org/ns/mei',
+              'liquescent'
+            );
             liq.setAttribute('xml:id', 'm-' + uuidv4());
             nc.appendChild(liq);
           }
@@ -269,12 +285,18 @@ export function convertToVerovio(sbBasedMei: string): string {
   }
 
   // Go section by section just in case
-  for (const section of mei.getElementsByTagName('section')) {
+  const sections = Array.from(mei.getElementsByTagName('section'));
+  for (const section of sections) {
     // In case there are multiple staves here we want to preserve those
     // A separate array is necessary as the HTMLCollection will update!
     const originalStaves = Array.from(section.getElementsByTagName('staff'));
     for (const staff of originalStaves) {
-      const layer = staff.getElementsByTagName('layer')[0];
+      // Add a pb with a facs pointing to the surface
+      const newPb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'pb');
+      newPb.setAttribute('facs', '#' + surface.getAttribute('xml:id'));
+      section.insertBefore(newPb, staff);
+
+      const layer = staff.querySelector('layer');
       // First pass: get all sb elements as direct children of layer
       const sbArray = Array.from(layer.getElementsByTagName('sb'));
       // Check if any syllables have sb inside (linked syllables)
@@ -346,6 +368,14 @@ export function convertToVerovio(sbBasedMei: string): string {
         const currentSb = sbs[i];
         const nextSb = (sbs.length > i + 1) ? sbs[i + 1] : undefined;
 
+        const newSb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'sb');
+        newSb.setAttribute('xml:id', 'm-' + uuidv4());
+        newSb.setAttribute('facs', currentSb.getAttribute('facs'));
+
+
+        const newSection = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'section');
+        newSection.setAttribute('type', 'neon-neume-line');
+
         const newStaff = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'staff');
         copyAttributes(currentSb, newStaff);
         newStaff.setAttribute('n', '1');
@@ -363,10 +393,11 @@ export function convertToVerovio(sbBasedMei: string): string {
           }
           newStaff.setAttribute('type', 'column' + nCol.toString());
         }
-        
+
         const newLayer = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'layer');
         newLayer.setAttribute('n', '1');
         newLayer.setAttribute('xml:id', 'm-' + uuidv4());
+        newSection.appendChild(newStaff);
         newStaff.appendChild(newLayer);
 
         const childrenArray = Array.from(layer.children);
@@ -383,13 +414,14 @@ export function convertToVerovio(sbBasedMei: string): string {
           const facsChildren = collectFacsChildren(lastElement, []);
           for (const child of facsChildren) {
             const zone = zones.find(z => z.getAttribute('xml:id') == child.getAttribute('facs').slice(1));
-            if (zone) {
+            if (zone && zones.length > 1) {
               zone.parentNode.removeChild(zone);
             }
           }
         }
 
-        section.insertBefore(newStaff, staff);
+        section.insertBefore(newSb, staff);
+        section.insertBefore(newSection, staff);
       }
       staff.remove();
     }
@@ -592,4 +624,4 @@ function collectFacsChildren(element: Element, array: Element[]): Element[] {
     collectFacsChildren(child, array);
   }
   return array;
-} 
+}

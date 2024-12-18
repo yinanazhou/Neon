@@ -19,9 +19,9 @@ export interface BBox {
 export function getSVGRelCoords (clientX: number, clientY: number): Point {
   const pt = new DOMPoint(clientX, clientY);
   const svg = document.querySelector<SVGSVGElement>('.active-page > .definition-scale');
-  const system = svg.querySelector<SVGGElement>('.system');
+  const pageMargin = svg.querySelector<SVGGElement>('.page-margin');
 
-  const { x, y } = pt.matrixTransform(system.getScreenCTM().inverse());
+  const { x, y } = pt.matrixTransform(pageMargin.getScreenCTM().inverse());
   return { x, y };
 
   // If there is some issue with coordinates, this may fix the issue:

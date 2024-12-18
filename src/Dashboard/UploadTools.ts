@@ -107,8 +107,8 @@ export function handleMakePair(): void {
     // Create new MEI file
     fm.getImgDimension(image_filename)
       .then((dimensions) => {
-        const { width, height } = dimensions;
-        const newMeiFile = fm.createMeiFile(mei_filename, width, height);
+        const { width, height, staffSpace } = dimensions;
+        const newMeiFile = fm.createMeiFile(mei_filename, width, height, staffSpace);
         fm.addFile(newMeiFile);
       })
       .catch((error) => {
