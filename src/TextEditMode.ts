@@ -1,10 +1,14 @@
 import { unselect } from './utils/SelectTools';
 import DragHandler from './utils/DragHandler';
 import NeonView from './NeonView';
-import { setSelectHelperObjects, dragSelect, clickSelect } from './utils/Select';
+import {
+  setSelectHelperObjects,
+  dragSelect,
+  clickSelect,
+} from './utils/Select';
 import { setGroupingHighlight } from './utils/Color';
 import { TextEditInterface } from './Interfaces';
-import  { ModalWindowView } from './utils/ModalWindow';
+import { ModalWindowView } from './utils/ModalWindow';
 import { setSettings } from './utils/LocalSettings';
 import { setCircleSizeControls } from './DisplayPanel/DisplayControls';
 
@@ -19,15 +23,17 @@ function formatRaw (rawString: string): string {
 }
 */
 
-function selByBBoxListener (): void {
+function selByBBoxListener(): void {
   if (!document.getElementById('selByBBox').classList.contains('is-active')) {
     unselect();
-    setSettings({ selectionMode : 'selByBBox' });
+    setSettings({ selectionMode: 'selByBBox' });
     try {
       document.getElementById('moreEdit').innerHTML = '';
       document.getElementById('extraEdit').innerHTML = '';
       document.getElementById('moreEdit').parentElement.classList.add('hidden');
-      document.getElementById('extraEdit').parentElement.classList.add('hidden');
+      document
+        .getElementById('extraEdit')
+        .parentElement.classList.add('hidden');
     } catch (e) {}
     document.getElementById('selByBBox').classList.add('is-active');
     try {
@@ -35,10 +41,15 @@ function selByBBoxListener (): void {
       document.getElementById('selByNeume').classList.remove('is-active');
       document.getElementById('selByStaff').classList.remove('is-active');
       document.getElementById('selBySyllable').classList.remove('is-active');
-      document.getElementById('selByLayerElement').classList.remove('is-active');
+      document
+        .getElementById('selByLayerElement')
+        .classList.remove('is-active');
     } catch (e) {}
     try {
-      if (document.querySelector('.highlight-selected').id === 'highlight-selection') {
+      if (
+        document.querySelector('.highlight-selected').id ===
+        'highlight-selection'
+      ) {
         setGroupingHighlight('syllable');
       }
     } catch (e) {}
@@ -57,19 +68,19 @@ export default class TextEditMode implements TextEditInterface {
    * Constructor for a TextEdit
    * @param neonView - The calling [[NeonView]] for the instance.
    */
-  constructor (neonView: NeonView) {
+  constructor(neonView: NeonView) {
     this.neonView = neonView;
     this.initTextEdit();
   }
 
   /**
-  * Set text to edit mode
-  */
-  initTextEdit (): void {
+   * Set text to edit mode
+   */
+  initTextEdit(): void {
     const spans = document.getElementById('syl_text').querySelectorAll('span');
     const modal = this.neonView.modal;
     spans.forEach((span: HTMLSpanElement) => {
-      function selectSylText (): void {
+      function selectSylText(): void {
         span.classList.add('selected-to-edit');
         modal.setModalWindowView(ModalWindowView.EDIT_TEXT);
         modal.openModalWindow();
@@ -89,14 +100,13 @@ export default class TextEditMode implements TextEditInterface {
     });
   }
 
-
   /**
-  * Add the selectByBBox button.
-  * If neume edit mode is there, add it to the bar with the other select by buttons.
-  * Otherwise add an invisible button
-  * since the only edit mode is selectByRect in that case
-  */
-  initSelectByBBoxButton (): void {
+   * Add the selectByBBox button.
+   * If neume edit mode is there, add it to the bar with the other select by buttons.
+   * Otherwise add an invisible button
+   * since the only edit mode is selectByRect in that case
+   */
+  initSelectByBBoxButton(): void {
     if (this.neonView.NeumeEdit !== undefined) {
       const selByBBox = document.getElementById('selByBBox');
       if (selByBBox) {
@@ -139,18 +149,23 @@ export default class TextEditMode implements TextEditInterface {
   /**
    * Initialize select by bbox mode
    */
-  addBBoxListeners (): void {
+  addBBoxListeners(): void {
     if (document.getElementById('selByBBox').classList.contains('is-active')) {
       unselect();
       if (this.neonView.NeumeEdit === undefined) {
         // just in case
-        this.dragHandler = new DragHandler(this.neonView, '.sylTextRect-display');
+        this.dragHandler = new DragHandler(
+          this.neonView,
+          '.sylTextRect-display',
+        );
         setSelectHelperObjects(this.neonView, this.dragHandler);
         if (this.neonView.view.constructor.name === 'SingleView') {
           clickSelect('#mei_output, #mei_output rect');
           dragSelect('#svg_group');
         } else {
-          clickSelect('.active-page > svg > svg, .active-page > svg > svg rect');
+          clickSelect(
+            '.active-page > svg > svg, .active-page > svg > svg rect',
+          );
           dragSelect('.active-page svg');
         }
       }
@@ -158,9 +173,9 @@ export default class TextEditMode implements TextEditInterface {
   }
 
   /**
-    * Add the bbox circle size slider.
-    */
-  initBBoxCircleSlider (): void {
+   * Add the bbox circle size slider.
+   */
+  initBBoxCircleSlider(): void {
     const circleSlider = document.getElementById('bbox-circle-slider');
     if (circleSlider) {
       circleSlider.style.display = '';
@@ -169,7 +184,10 @@ export default class TextEditMode implements TextEditInterface {
 
     const sliderSection = document.getElementById('display-slider-section');
     const circleSliderContainer = document.createElement('div');
-    circleSliderContainer.classList.add('slider-and-slider-actions-container', 'display-panel');
+    circleSliderContainer.classList.add(
+      'slider-and-slider-actions-container',
+      'display-panel',
+    );
     circleSliderContainer.style.cursor = 'default';
     circleSliderContainer.id = 'bbox-circle-slider';
     circleSliderContainer.innerHTML = `
@@ -181,7 +199,7 @@ export default class TextEditMode implements TextEditInterface {
     </div>
     <div class="slider-container">
         <input type="range"
-            step="1" min="0" max="25" value="25"
+            step="1" min="0" max="50" value="25"
             aria-labelledby="reset-circle-size"
             class="slider is-fullwidth is-large"
             id="circleSlider"
@@ -191,7 +209,7 @@ export default class TextEditMode implements TextEditInterface {
         <output id="circleOutput" for="circleSlider">25</output>
     </div>`;
     sliderSection.appendChild(circleSliderContainer);
-   
+
     if (this.neonView.NeumeEdit === undefined) {
       circleSliderContainer.style.display = 'none';
     }
