@@ -2,8 +2,7 @@
  * HTML for each insert tab (neume, grouping, clef, system, and division).
  */
 export const insertTabHtml: Record<string, string> = {
-  primitiveTab: 
-        `<p class="insert-element-container">
+  primitiveTab: `<p class="insert-element-container">
             <button id="punctum" class="side-panel-btn insertel smallel" aria-label="punctum" title="punctum"><img src="${__ASSET_PREFIX__}assets/img/punctum.png" class="image"/></button>
         </p>
         <p class="insert-element-container">
@@ -35,12 +34,11 @@ export const insertTabHtml: Record<string, string> = {
         </p>
         <p class="insert-element-container">
             <button id="natural" class="side-panel-btn insertel smallel" aria-label="Natural" title="Natural"><img src="${__ASSET_PREFIX__}assets/img/accidNatural.png" class="image"></button>
-        </p> 
+        </p>
         <p class="insert-element-container">
             <button id="divLineMaxima" class="side-panel-btn insertel smallel" aria-label="DivLine Maxima" title="DivLine Maxima"><img src="${__ASSET_PREFIX__}assets/img/divisio.png" class="image"></button>
         </p>`,
-  groupingTab: 
-        `<p class="insert-element-container">
+  groupingTab: `<p class="insert-element-container">
             <button id="pes" class="side-panel-btn insertel smallel" aria-label="pes" title="pes"><img src="${__ASSET_PREFIX__}assets/img/pes.png" class="image"></button>
         </p>
         <p class="insert-element-container">
@@ -61,12 +59,11 @@ export const insertTabHtml: Record<string, string> = {
         <p class="insert-element-container">
             <button id="pressus" class="side-panel-btn insertel smallel" aria-label="pressus" title="pressus"><img src="${__ASSET_PREFIX__}assets/img/pressus.png" class="image"></button>
         </p>`,
-  systemTab: 
-        `<p class="insert-element-container">
+  systemTab: `<p class="insert-element-container">
             <button id="staff" class="side-panel-btn insertel longel" aria-label="system" title="system"><img src="${__ASSET_PREFIX__}assets/img/staff.png" class="image"></button>
         </p>
-        <p>Click upper left and lower right corners of new staff.</p>`
-  // divisionTab: "<p class='insert-element-container'>" +    
+        <p>Click upper left and lower right corners of new staff.</p>`,
+  // divisionTab: "<p class='insert-element-container'>" +
   // "<button id='smallDiv' class='side-panel-btn insertel tallel'><img src='" + __ASSET_PREFIX__ + 'assets/img/smalldiv.png "' class='image'/></button></p>" +
   // "<p class='insert-element-container'>" +
   //     "<button id='minorDiv' class='side-panel-btn insertel tallel'><img src='" + __ASSET_PREFIX__ + 'assets/img/minordiv.png"' class='image'/></button></p>" +
@@ -79,8 +76,7 @@ export const insertTabHtml: Record<string, string> = {
 /**
  * Structure of insert panel with basic grouping tabs.
  */
-export const insertControlsPanel =
-    `<div class="panel-heading" id="insertMenu">
+export const insertControlsPanel = `<div class="panel-heading" id="insertMenu">
         <div class="panel-heading-title">INSERT</div>
         <svg class="icon is-pulled-right">
             <use id="toggleInsert" xlink:href="${__ASSET_PREFIX__}assets/img/icons.svg#dropdown-down"></use>
@@ -100,8 +96,7 @@ export const insertControlsPanel =
 /**
  * Contents of edit panel with buttons.
  */
-export const editControlsPanel =
-    `<div class="panel-heading" id="editMenu">
+export const editControlsPanel = `<div class="panel-heading" id="editMenu">
         <div class="panel-heading-title focused">EDIT</div>
         <svg class="icon is-pulled-right">
             <use id="toggleEdit" xlink:href="${__ASSET_PREFIX__}assets/img/icons.svg#dropdown-down"></use>
@@ -112,13 +107,13 @@ export const editControlsPanel =
             <div id="selection-mode-container">
                 <div class="panel-sub-title">Selection Mode:</div>
                 <div id="selection-mode-btns-container"  class="right-side-panel-btns-container" style="overflow-x: auto;">
-                    
+
                         <button class="side-panel-btn sel-by" id="selBySyllable">Syllable</button>
                         <button class="side-panel-btn sel-by" id="selByNeume">Neume</button>
                         <button class="side-panel-btn sel-by" id="selByNc">Neume Component</button>
                         <button class="side-panel-btn sel-by" id="selByStaff">Staff</button>
                         <button class="side-panel-btn sel-by" id="selByLayerElement">Layer Element</button>
-                    
+
                 </div>
             </div>
         </div>
@@ -145,12 +140,10 @@ export const editControlsPanel =
         </div>
     </div>`;
 
-
 /**
  * Contents of extra nc action menu.
  */
-export const ncActionContents =
-    `<label>Change Head Shape:</label>
+export const ncActionContents = `<label>Change Head Shape:</label>
     <div class="drop_select dropdown">
         <div class="dropdown-trigger">
             <button id="select-options" class="side-panel-btn" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -161,7 +154,7 @@ export const ncActionContents =
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
                 <a id="Punctum" class="dropdown-item">Punctum</a>
-                <a id="Virga" class="dropdown-item">Virga</a> 
+                <a id="Virga" class="dropdown-item">Virga</a>
                 <a id="VirgaReversed" class="dropdown-item">Reversed Virga</a>
                 <a id="Inclinatum" class="dropdown-item">Inclinatum</a>
                 <a id="LiquescentAnticlockwise" class="dropdown-item">Liquescent A</a>
@@ -173,8 +166,7 @@ export const ncActionContents =
 /**
  * Contents of basic neume action menu.
  */
-export const defaultNeumeActionContents =
-    `<div class="right-side-panel-btns-container">
+export const defaultNeumeActionContents = `<div class="right-side-panel-btns-container">
         <button class="side-panel-btn" id="delete">Delete</button>
         <button class="side-panel-btn" id="split-neume">Split Neumes</button>
     </div>`;
@@ -182,8 +174,7 @@ export const defaultNeumeActionContents =
 /**
  * Contents of extra neume action menu.
  */
-export const neumeActionContents =
-    `<label>Grouping Options:</label>
+export const neumeActionContents = `<label>Grouping Options:</label>
     <div class="right-side-panel-btns-container">
         <div class="drop_select dropdown">
             <div class="dropdown-trigger">
@@ -218,8 +209,7 @@ export const neumeActionContents =
 /**
  * Contents of default action menu.
  */
-export const defaultActionContents = 
-    `<div class="right-side-panel-btns-container">
+export const defaultActionContents = `<div class="right-side-panel-btns-container">
         <button class="side-panel-btn" id="delete">Delete</button>
     </div>`;
 
@@ -227,15 +217,13 @@ export const defaultActionContents =
  * Contents of default action menu when selecting by syllable
  * Same as above except includes re-associate to nearest staff
  */
-export const defaultSylActionContents =
-    `<button class="side-panel-btn" id="delete">Delete</button>
+export const defaultSylActionContents = `<button class="side-panel-btn" id="delete">Delete</button>
     <button class="side-panel-btn" id="changeStaff">Re-associate to nearest staff</button>`;
-    
+
 /**
  * Contents of custos action menu.
  */
-export const custosActionContents =
-    `<div class="right-side-panel-btns-container">
+export const custosActionContents = `<div class="right-side-panel-btns-container">
         <button class="side-panel-btn" id="delete">Delete</button>
         <button class="side-panel-btn" id="changeStaff">Re-associate to nearest staff</button>
     </div>`;
@@ -243,8 +231,7 @@ export const custosActionContents =
 /**
  * Contents of layer element (outside syllable) action menu.
  */
-export const layerElementOutActionContents =
-    `<div class="right-side-panel-btns-container">
+export const layerElementOutActionContents = `<div class="right-side-panel-btns-container">
         <button class="side-panel-btn" id="delete">Delete</button>
         <button class="side-panel-btn" id="insertToSyllable">Insert to nearest syllable</button>
         <button class="side-panel-btn" id="changeStaff">Re-associate to nearest staff</button>
@@ -253,8 +240,7 @@ export const layerElementOutActionContents =
 /**
  * Contents of layer element (inside syllable) action menu.
  */
-export const layerElementInActionContents =
-    `<div class="right-side-panel-btns-container">
+export const layerElementInActionContents = `<div class="right-side-panel-btns-container">
         <button class="side-panel-btn" id="delete">Delete</button>
         <button class="side-panel-btn" id="moveOutsideSyllable">Move outside syllable</button>
         <button class="side-panel-btn" id="changeStaff">Re-associate to nearest staff</button>
@@ -263,8 +249,7 @@ export const layerElementInActionContents =
 /**
  * Contents of accid action menu.
  */
-export const accidActionContents =
-    `<label>Change Accidental:</label>
+export const accidActionContents = `<label>Change Accidental:</label>
     <div class="drop_select dropdown">
         <div class="dropdown-trigger"overflow="auto">
             <button id="select-options" class="side-panel-btn" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -283,8 +268,7 @@ export const accidActionContents =
 /**
  * Contents of staff split action menu.
  */
-export const staffSplitActionContents =
-    `<div>Split System:</div>
+export const staffSplitActionContents = `<div>Split System:</div>
     <div id="split-system-btns-container" class="right-side-panel-btns-container">
         <button id="split-system" class="side-panel-btn">Split</button>
         <button id="reset-rotate" class="side-panel-btn">Reset Rotate</button>
@@ -294,8 +278,7 @@ export const staffSplitActionContents =
 /**
  * Contents of extra staff action menu.
  */
-export const staffMergeActionContents =
-    `<label>Merge Systems:</label>
+export const staffMergeActionContents = `<label>Merge Systems:</label>
     <div id="merge-system-btns-container" class="right-side-panel-btns-container">
         <button id="merge-systems" class="side-panel-btn">Merge</button>
         <button class="side-panel-btn" id="delete">Delete</button>
@@ -304,23 +287,21 @@ export const staffMergeActionContents =
 /**
  * Contents of accid action menu.
  */
-export const columnActionContents =
-    `<div class="col-edit-container">
-        Edit Column Information: 
+export const columnActionContents = `<div class="col-edit-container">
+        Edit Column Information:
         <div id="col-stepper-btns-container" class="right-side-panel-btns-container">
             <button id="col-decrement" class="side-panel-btn col-stepper-btn">–</button>
             <input type="text" id="col-input" class="side-panel-stepper-input" value="0">
             <button id="col-increment" class="side-panel-btn col-stepper-btn">+</button>
             <button id="col-confirm" class="side-panel-btn side-panel-confirm-btn" style="display:none">Confirm</button>
-            <div id="col-warning" class="side-panel-warning"></div> 
+            <div id="col-warning" class="side-panel-warning"></div>
         </div>
     </div>`;
 
 /**
  * Contents of extra clef action menu.
  */
-export const clefActionContents =
-    `
+export const clefActionContents = `
     <div class="right-side-panel-btns-container">
         <div class="drop_select dropdown">
             <div class="dropdown-trigger" overflow="auto">
@@ -356,8 +337,7 @@ export const clefActionContents =
 /**
  * Contents of divLine type action menu.
  */
-export const divLineActionContents =
-`<label>Change DivLine:</label>
+export const divLineActionContents = `<label>Change DivLine:</label>
 <div class="drop_select dropdown">
     <div class="dropdown-trigger"overflow="auto">
         <button id="select-options" class="side-panel-btn" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -380,8 +360,7 @@ export const divLineActionContents =
 /**
  * Contents of bbox action menu.
  */
-export const bboxActionContents =
-    `<div class="right-side-panel-btns-container">
+export const bboxActionContents = `<div class="right-side-panel-btns-container">
         <button class="side-panel-btn" id="matchHeight">Match Height for Entire Row</button>
         <button class="side-panel-btn" id="delete">Delete</button>
     </div>`;
@@ -427,26 +406,22 @@ export const groupingMenu = {
                         <button class="side-panel-btn" id="toggle-link">Toggle Linked Syllables</button>
                         <button class="side-panel-btn" id="delete">Delete</button>
                     </div>
-                </div>`
+                </div>`,
 };
-
-
 
 /* BGINNING OF MODAL WINDOW CONTENT SECTION */
 
 /**
  * HTML for Edit Syllable Text modal window
  */
-export const editTextModal = 
-    `<div class="neon-modal-window-content" id="neon-modal-window-content-edit-text">
+export const editTextModal = `<div class="neon-modal-window-content" id="neon-modal-window-content-edit-text">
         <label for="neon-modal-window-edit-text-input" id="neon-modal-window-edit-text-label">Enter Syllable Text:</label>
         <input id="neon-modal-window-edit-text-input" type="text">
         <div id="neon-modal-window-edit-text-btns">
         <div class="neon-modal-window-btn" id="neon-modal-window-edit-text-cancel">Cancel</div>
-        <div class="neon-modal-window-btn" id="neon-modal-window-edit-text-save">Save</div>        
+        <div class="neon-modal-window-btn" id="neon-modal-window-edit-text-save">Save</div>
         </div>
     </div>`;
-
 
 /**
  * HTML for Hotkeys modal window
@@ -548,7 +523,15 @@ export const hotkeysModal = `
                     <div class="hotkey-entry">Number</div>
                 </div>
                 <div class="hotkey-entry-description">
-                    Begin Insert for the <i>nth</i> option in the selected tab
+                    Begin Insert for the <i>nth</i> Option in the Selected Tab
+                </div>
+            </div>
+            <div class="hotkey-entry-container">
+                <div class="hotkey-container">
+                    <div class="hotkey-entry">g</div>
+                </div>
+                <div class="hotkey-entry-description">
+                    Group/Ungroup Selected Element(s)
                 </div>
             </div>
         </div>
@@ -580,8 +563,7 @@ export const syllableActionsContent = `
   </div>
 `;
 
-export const errorLogsPanelContents = 
-    `<div class="panel-heading" id="errorLogHeading">
+export const errorLogsPanelContents = `<div class="panel-heading" id="errorLogHeading">
         <div class="panel-heading-title">Error Log</div>
         <svg class="icon">
             <use id="toggleErrorLog" xlink:href="${__ASSET_PREFIX__}/assets/img/icons.svg#dropdown-down"></use>
