@@ -1,5 +1,8 @@
 import * as Color from './Color';
-import { updateHighlight, getHighlightType } from '../DisplayPanel/DisplayControls';
+import {
+  updateHighlight,
+  getHighlightType,
+} from '../DisplayPanel/DisplayControls';
 import * as Grouping from '../SquareEdit/Grouping';
 import { resize } from './Resize';
 import { Attributes, SelectionType } from '../Types';
@@ -11,7 +14,7 @@ import * as d3 from 'd3';
 /**
  * @returns The selection mode chosen by the user.
  */
-export function getSelectionType (): SelectionType {
+export function getSelectionType(): SelectionType {
   const element = document.getElementsByClassName('sel-by is-active');
   if (element.length !== 0) {
     return element[0].id as SelectionType;
@@ -24,9 +27,10 @@ export function getSelectionType (): SelectionType {
  * Unselect all selected elements and run undo any extra
  * actions.
  */
-export function unselect (): void {
-  document.querySelectorAll('.no-moving').forEach((selected: SVGGElement) => 
-    selected.classList.remove('no-moving'));
+export function unselect(): void {
+  document
+    .querySelectorAll('.no-moving')
+    .forEach((selected: SVGGElement) => selected.classList.remove('no-moving'));
   document.querySelectorAll('.selected').forEach((selected: SVGGElement) => {
     selected.classList.remove('selected');
     if (selected.classList.contains('staff')) {
@@ -37,46 +41,57 @@ export function unselect (): void {
       selected.style.fill = '';
     }
 
-    Array.from(selected.querySelectorAll('.divLine')).forEach((divLine: HTMLElement) => {
-      divLine.style.stroke = '';
-      divLine.setAttribute('stroke-width', '30px');
-    });
-  
-    Array.from(selected.querySelectorAll('.neume')).forEach((neume: HTMLElement) => {
-      neume.style.fill = '';
-    });
-  
-    Array.from(selected.querySelectorAll('.sylTextRect-display')).forEach((sylRect: HTMLElement) => {
-      sylRect.style.fill = 'blue';
-    });
+    Array.from(selected.querySelectorAll('.divLine')).forEach(
+      (divLine: HTMLElement) => {
+        divLine.style.stroke = '';
+        divLine.setAttribute('stroke-width', '30px');
+      },
+    );
+
+    Array.from(selected.querySelectorAll('.neume')).forEach(
+      (neume: HTMLElement) => {
+        neume.style.fill = '';
+      },
+    );
+
+    Array.from(selected.querySelectorAll('.sylTextRect-display')).forEach(
+      (sylRect: HTMLElement) => {
+        sylRect.style.fill = 'blue';
+      },
+    );
 
     if (selected.parentElement.classList.contains('syllable-highlighted')) {
       selected.parentElement.style.fill = '';
       selected.parentElement.classList.add('syllable');
       selected.parentElement.classList.remove('syllable-highlighted');
-      
-      Array.from(selected.parentElement.querySelectorAll('.divLine')).forEach((divLine: HTMLElement) => {
-        divLine.style.stroke = '';
-        divLine.setAttribute('stroke-width', '30px');
-      });
-    
-      Array.from(selected.parentElement.querySelectorAll('.neume')).forEach((neume: HTMLElement) => {
-        neume.style.fill = '';
-      });
+
+      Array.from(selected.parentElement.querySelectorAll('.divLine')).forEach(
+        (divLine: HTMLElement) => {
+          divLine.style.stroke = '';
+          divLine.setAttribute('stroke-width', '30px');
+        },
+      );
+
+      Array.from(selected.parentElement.querySelectorAll('.neume')).forEach(
+        (neume: HTMLElement) => {
+          neume.style.fill = '';
+        },
+      );
     }
 
     d3.selectAll('#resizeRect').remove();
     d3.selectAll('.resizePoint').remove();
     d3.selectAll('.rotatePoint').remove();
-  
   });
 
-  Array.from(document.querySelectorAll('.text-select')).forEach((el: SVGElement) => {
-    el.style.color = '';
-    el.style.fontWeight = '';
-    el.classList.remove('text-select');
-  });
-  
+  Array.from(document.querySelectorAll('.text-select')).forEach(
+    (el: SVGElement) => {
+      el.style.color = '';
+      el.style.fontWeight = '';
+      el.classList.remove('text-select');
+    },
+  );
+
   if (!document.getElementById('selByStaff').classList.contains('is-active')) {
     Grouping.endGroupingSelection();
   } else {
@@ -92,7 +107,10 @@ export function unselect (): void {
  * @param staff - The staff element in the DOM.
  * @param dragHandler - The drag handler in use.
  */
-export function selectStaff (staff: SVGGElement, dragHandler: DragHandler): void {
+export function selectStaff(
+  staff: SVGGElement,
+  dragHandler: DragHandler,
+): void {
   if (!staff.classList.contains('selected')) {
     staff.classList.add('selected');
     Color.unhighlight(staff);
@@ -108,7 +126,10 @@ export function selectStaff (staff: SVGGElement, dragHandler: DragHandler): void
  * @param layerElement - The layer element in the DOM.
  * @param dragHandler - The drag handler in use.
  */
-export function selectLayerElement (layerElement: SVGGElement, dragHandler: DragHandler): void {
+export function selectLayerElement(
+  layerElement: SVGGElement,
+  dragHandler: DragHandler,
+): void {
   if (!layerElement.classList.contains('selected')) {
     layerElement.classList.add('selected');
     Color.unhighlight(layerElement);
@@ -123,7 +144,11 @@ export function selectLayerElement (layerElement: SVGGElement, dragHandler: Drag
  * @param dragHandler - Only used for staves.
  * @param needsHighlightUpdate - Whether all the group's highlights should be updated
  */
-export function select (el: SVGGraphicsElement, dragHandler?: DragHandler, needsHighlightUpdate = true): void {
+export function select(
+  el: SVGGraphicsElement,
+  dragHandler?: DragHandler,
+  needsHighlightUpdate = true,
+): void {
   // If element does not exist, exit
   if (!el) return;
 
@@ -134,18 +159,23 @@ export function select (el: SVGGraphicsElement, dragHandler?: DragHandler, needs
     return selectLayerElement(el, dragHandler);
   }
 
-  if (!el.classList.contains('selected') && !el.classList.contains('sylTextRect') &&
-      !el.classList.contains('sylTextRect-display')) {
+  if (
+    !el.classList.contains('selected') &&
+    !el.classList.contains('sylTextRect') &&
+    !el.classList.contains('sylTextRect-display')
+  ) {
     el.classList.add('selected');
     // set fill to red
     // set stroke to red only if selected elem is a divLine
     el.style.fill = '#d00';
-    el.style.stroke = (el.classList.contains('divLine'))? '#d00' : 'black';
+    el.style.stroke = el.classList.contains('divLine') ? '#d00' : 'black';
 
     if (el.querySelectorAll('.sylTextRect-display').length) {
-      el.querySelectorAll('.sylTextRect-display').forEach((elem: HTMLElement) => {
-        elem.style.fill = '#d00';
-      });
+      el.querySelectorAll('.sylTextRect-display').forEach(
+        (elem: HTMLElement) => {
+          elem.style.fill = '#d00';
+        },
+      );
     }
 
     if (el.querySelectorAll('.divLine').length) {
@@ -154,7 +184,7 @@ export function select (el: SVGGraphicsElement, dragHandler?: DragHandler, needs
       });
     }
 
-    if(el.classList.contains('syllable')) {
+    if (el.classList.contains('syllable')) {
       el.querySelectorAll('.neume').forEach((elem: HTMLElement) => {
         elem.style.fill = '#d00';
       });
@@ -180,13 +210,16 @@ export function select (el: SVGGraphicsElement, dragHandler?: DragHandler, needs
     updateHighlight();
   }
 }
-    
 
 /**
  * Select an nc.
  * @param el - The neume component.
  */
-export async function selectNcs (el: SVGGraphicsElement, neonView: NeonView, dragHandler: DragHandler): Promise<void> {
+export async function selectNcs(
+  el: SVGGraphicsElement,
+  neonView: NeonView,
+  dragHandler: DragHandler,
+): Promise<void> {
   if (!el.parentElement.classList.contains('selected')) {
     const parent = el.parentElement as unknown as SVGGraphicsElement;
     unselect();
@@ -218,36 +251,46 @@ export async function selectNcs (el: SVGGraphicsElement, neonView: NeonView, dra
  * @param neonView - The [[NeonView]] for this instance.
  * @returns True if the neume component is part of a ligature.
  */
-export async function isLigature (nc: SVGGraphicsElement, neonView: NeonView): Promise<boolean> {
-  const attributes: Attributes = await neonView.getElementAttr(nc.id, neonView.view.getCurrentPageURI());
+export async function isLigature(
+  nc: SVGGraphicsElement,
+  neonView: NeonView,
+): Promise<boolean> {
+  const attributes: Attributes = await neonView.getElementAttr(
+    nc.id,
+    neonView.view.getCurrentPageURI(),
+  );
   return Boolean(attributes.ligated);
 }
-
 
 /**
  * Check if list of elements of a certain type are logically adjacent to each other.
  * Includes elements that are on separate staves but would otherwise be next to each other.
  * Can not apply to elements of type neume component.
- * 
+ *
  * @param selectionType user selection mode
  * @param elements the elements of interest
  * @returns true if elements are adjacent, false otherwise
  */
-export function areAdjacent(selectionType: string, elements: SVGGraphicsElement[]): boolean {
+export function areAdjacent(
+  selectionType: string,
+  elements: SVGGraphicsElement[],
+): boolean {
   // 2 elements cannot be adjacent if there is only 1 element
   if (elements.length < 2) return false;
 
   // get all elements that are of the same type as selectionType
   let allElemsOfSelectionType: HTMLElement[];
-  switch(selectionType) {
+  switch (selectionType) {
     case 'selBySyllable':
-      allElemsOfSelectionType = Array.from(document.querySelectorAll('.syllable'));
+      allElemsOfSelectionType = Array.from(
+        document.querySelectorAll('.syllable'),
+      );
       break;
 
     case 'selByNeume':
-      // We automatically return 'true' for neumes because we want the user to be 
+      // We automatically return 'true' for neumes because we want the user to be
       // allowed to group two neumes in separate syllabes without having to parform other
-      // steps first. Yes, there is a trade-off - this allows users to try and group any 
+      // steps first. Yes, there is a trade-off - this allows users to try and group any
       // two non-adjacent neumes, but it was decided that the benefits (speed and efficiency)
       // outweigh the costs (user trying an illegal edit).
       return true;
@@ -263,23 +306,23 @@ export function areAdjacent(selectionType: string, elements: SVGGraphicsElement[
     default:
       return false;
   }
-  
-  // Sort SELECTED elements in order of appearance by 
+
+  // Sort SELECTED elements in order of appearance by
   // matching to order of ALL elements of selection type
   const sortedElements = [];
-  for (let i=0; i<allElemsOfSelectionType.length; i++) {
-    for (let j=0; j<elements.length; j++) {
+  for (let i = 0; i < allElemsOfSelectionType.length; i++) {
+    for (let j = 0; j < elements.length; j++) {
       if (allElemsOfSelectionType[i].isSameNode(elements[j])) {
         sortedElements.push(elements[j]);
       }
     }
   }
 
-  // Now check if SELECTED elements are all adjacent (in a row) by 
+  // Now check if SELECTED elements are all adjacent (in a row) by
   // finding and comparing their indeces in the array of ALL elements of selection type
-  for (let i=0; i<sortedElements.length-1; i++) {
+  for (let i = 0; i < sortedElements.length - 1; i++) {
     const firstElem = sortedElements[i];
-    const secondElem = sortedElements[i+1];
+    const secondElem = sortedElements[i + 1];
 
     const index1 = allElemsOfSelectionType.indexOf(firstElem);
     const index2 = allElemsOfSelectionType.indexOf(secondElem);
@@ -290,37 +333,48 @@ export function areAdjacent(selectionType: string, elements: SVGGraphicsElement[
   return true;
 }
 
-
 /**
  * Check to see if the array of elements all share the same logical parent.
  * For example: If all neumes are in the same syllable.
- * 
+ *
  * Note!! There is currently no logic for treating layer elements and bboxes!
  * Note!! Function will always return true for stave elements. (Should it???)
- * 
+ *
  * @param selectionType the current Neon selection mode
  * @param elements the elements in question
  * @returns true if all elements share the same logical parent, false otherwise.
  */
-export function sharedLogicalParent(selectionType: string, elements: SVGGraphicsElement[]): boolean {
-  elements = elements.filter(elem => !(elem.classList.contains('divLine') || elem.classList.contains('accid') || elem.classList.contains('clef')));
+export function sharedLogicalParent(
+  selectionType: string,
+  elements: SVGGraphicsElement[],
+): boolean {
+  elements = elements.filter(
+    (elem) =>
+      !(
+        elem.classList.contains('divLine') ||
+        elem.classList.contains('accid') ||
+        elem.classList.contains('clef')
+      ),
+  );
 
   if (!elementsHaveCorrectType(selectionType, elements)) return false;
 
-  switch(selectionType) {
+  switch (selectionType) {
     case 'selBySyllable':
       const referenceParentStaff = elements[0].closest('.staff');
-      for (let i=0; i<elements.length; i++) {
+      for (let i = 0; i < elements.length; i++) {
         const elem = elements[i];
-        if (!elem.closest('.staff').isSameNode(referenceParentStaff)) return false;
+        if (!elem.closest('.staff').isSameNode(referenceParentStaff))
+          return false;
       }
       return true;
 
     case 'selByNeume':
       const referenceParentSyllable = elements[0].closest('.syllable');
-      for (let i=0; i<elements.length; i++) {
+      for (let i = 0; i < elements.length; i++) {
         const elem = elements[i];
-        if (!elem.closest('.syllable').isSameNode(referenceParentSyllable)) return false;
+        if (!elem.closest('.syllable').isSameNode(referenceParentSyllable))
+          return false;
       }
       return true;
 
@@ -332,22 +386,23 @@ export function sharedLogicalParent(selectionType: string, elements: SVGGraphics
   }
 }
 
-
 /**
- * Check if all selected elements have the same type as current selection mode. 
+ * Check if all selected elements have the same type as current selection mode.
  * For example, check if all selected elements are of type neume, or syllable, etc.
- * 
+ *
  * Note!! There is no logic currently implemented for layer elements or bboxes.
- * 
+ *
  * @param selectionType the current selection mode
  * @param elements the elements that are being checked
  * @returns true if all elements match selection mode, false otherwise.
  */
-export function elementsHaveCorrectType(selectionType: string, elements: SVGGraphicsElement[]): boolean {
-
+export function elementsHaveCorrectType(
+  selectionType: string,
+  elements: SVGGraphicsElement[],
+): boolean {
   if (elements.length < 2) return false;
 
-  switch(selectionType) {
+  switch (selectionType) {
     case 'selBySyllable':
       elements.forEach((elem) => {
         if (!elem.classList.contains('syllable')) return false;
@@ -373,12 +428,13 @@ export function elementsHaveCorrectType(selectionType: string, elements: SVGGrap
   return true;
 }
 
-
 /**
  * @param elements - The elements to compare.
  * @returns True if the elements have the same parent up two levels, otherwise false.
  */
-export function sharedSecondLevelParent (elements: SVGGraphicsElement[]): boolean {
+export function sharedSecondLevelParent(
+  elements: SVGGraphicsElement[],
+): boolean {
   const tempElements = Array.from(elements);
   const firstElement = tempElements.pop();
   const secondParent = firstElement.parentElement.parentElement;
@@ -399,10 +455,10 @@ export function sharedSecondLevelParent (elements: SVGGraphicsElement[]): boolea
 export function isMultiStaveSelection(elements: SVGElement[]): boolean {
   const elementsArray = Array.from(elements);
 
-  for (let i=0; i<elementsArray.length; i++) {
+  for (let i = 0; i < elementsArray.length; i++) {
     const staff = elementsArray[i].closest('.staff');
 
-    for (let j=i; j<elementsArray.length; j++) {
+    for (let j = i; j < elementsArray.length; j++) {
       const anotherStaff = elementsArray[j].closest('.staff');
       // compare with other staves
       if (!staff.isSameNode(anotherStaff)) return true;
@@ -411,7 +467,6 @@ export function isMultiStaveSelection(elements: SVGElement[]): boolean {
 
   return false;
 }
-
 
 /**
  * Bounding box object interface for getStaffBBox()
@@ -429,15 +484,17 @@ export interface StaffBBox {
  * Get the bounding box of a staff based on its staff lines.
  * Rotate is included in radians.
  */
-export function getStaffBBox (staff: SVGGElement): StaffBBox {
+export function getStaffBBox(staff: SVGGElement): StaffBBox {
   let ulx, uly, lrx, lry, rotate;
-  staff.querySelectorAll('path').forEach(path => {
-    const coordinates: number[] = path.getAttribute('d')
+  staff.querySelectorAll('path').forEach((path) => {
+    const coordinates: number[] = path
+      .getAttribute('d')
       .match(/\d+/g)
-      .map(element => Number(element));
+      .map((element) => Number(element));
     if (rotate === undefined) {
-      rotate = Math.atan((coordinates[3] - coordinates[1]) /
-        (coordinates[2] - coordinates[0]));
+      rotate = Math.atan(
+        (coordinates[3] - coordinates[1]) / (coordinates[2] - coordinates[0]),
+      );
     }
 
     if (uly === undefined || Math.min(coordinates[1], coordinates[3]) < uly) {
@@ -454,7 +511,7 @@ export function getStaffBBox (staff: SVGGElement): StaffBBox {
     }
   });
 
-  return { id: staff.id, ulx, uly, lrx, lry, rotate, };
+  return { id: staff.id, ulx, uly, lrx, lry, rotate };
 }
 
 /**
@@ -462,7 +519,11 @@ export function getStaffBBox (staff: SVGGElement): StaffBBox {
  * @param el - the bbox (sylTextRect) element in the DOM
  * @param dragHandler - the drag handler in use
  */
-export function selectBBox (el: SVGGraphicsElement, dragHandler: DragHandler, neonView: NeonView): void {
+export function selectBBox(
+  el: SVGGraphicsElement,
+  dragHandler: DragHandler,
+  neonView: NeonView,
+): void {
   const bbox = el;
   const syl = bbox.closest('.syl');
   if (!syl.classList.contains('selected')) {
@@ -471,7 +532,7 @@ export function selectBBox (el: SVGGraphicsElement, dragHandler: DragHandler, ne
     const closest = el.closest('.syllable') as HTMLElement;
     closest.style.fill = '#d00';
     closest.classList.add('syllable-highlighted');
-    if(closest.querySelectorAll('.divLine').length) {
+    if (closest.querySelectorAll('.divLine').length) {
       closest.querySelectorAll('.neume').forEach((elem: HTMLElement) => {
         elem.style.fill = '#d00';
       });
@@ -480,7 +541,7 @@ export function selectBBox (el: SVGGraphicsElement, dragHandler: DragHandler, ne
       });
     }
 
-    if (neonView !== undefined ){
+    if (neonView !== undefined) {
       resize(syl as SVGGraphicsElement, neonView, dragHandler);
     }
     if (dragHandler !== undefined) {
@@ -503,9 +564,11 @@ export function selectBBox (el: SVGGraphicsElement, dragHandler: DragHandler, ne
  * Select not neume elements.
  * @param notNeumes - An array of not neumes elements.
  */
-export function selectNn (notNeumes: SVGGraphicsElement[]): boolean {
+export function selectNn(notNeumes: SVGGraphicsElement[]): boolean {
   if (notNeumes.length > 0) {
-    notNeumes.forEach(nn => { select(nn); });
+    notNeumes.forEach((nn) => {
+      select(nn);
+    });
     return false;
   } else {
     return true;
@@ -515,7 +578,11 @@ export function selectNn (notNeumes: SVGGraphicsElement[]): boolean {
 /**
  * Handle selecting an array of elements based on the selection type.
  */
-export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: NeonView, dragHandler: DragHandler): Promise<void> {
+export async function selectAll(
+  elements: Array<SVGGraphicsElement>,
+  neonView: NeonView,
+  dragHandler: DragHandler,
+): Promise<void> {
   const selectionType = getSelectionType();
   unselect();
   if (elements.length === 0) {
@@ -558,7 +625,11 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
       // Check if we click-selected a clef or a custos or an accid or a divLine
       grouping = element.closest('.clef, .custos, .accid, .divLine');
       if (grouping === null) {
-        console.warn('Element ' + element.id + ' is not part of specified group and is not a clef or custos or accid or divLine.');
+        console.warn(
+          'Element ' +
+            element.id +
+            ' is not part of specified group and is not a clef or custos or accid or divLine.',
+        );
         continue;
       }
       containsLayerElements = containsLayerElements || true;
@@ -568,10 +639,10 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
     groupsToSelect.add(grouping);
 
     // Check for precedes/follows
-    let selected = grouping; 
+    let selected = grouping;
     let follows = selected.getAttribute('mei:follows');
     let precedes = selected.getAttribute('mei:precedes');
-    while (follows || precedes){  
+    while (follows || precedes) {
       if (follows) {
         selected = document.querySelector('#' + follows.slice(1));
         if (groupsToSelect.has(selected)) {
@@ -593,7 +664,9 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
     }
   }
   // Select the elements
-  groupsToSelect.forEach((group: SVGGraphicsElement) => select(group, dragHandler, false));
+  groupsToSelect.forEach((group: SVGGraphicsElement) =>
+    select(group, dragHandler, false),
+  );
 
   /* Determine the context menu to display (if any) */
 
@@ -602,9 +675,9 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
   // Handle occurance of clef or custos or accid or divLine
   if (containsLayerElements && !containsNc) {
     // A context menu will only be displayed if there is a single clef
-    if (groupsToSelect.size === 1 ) {
+    if (groupsToSelect.size === 1) {
       SelectOptions.triggerLayerElementActions(groups[0]);
-    }else {
+    } else {
       if (selectionType == 'selBySyllable') {
         SelectOptions.triggerDefaultSylActions();
       } else {
@@ -631,36 +704,26 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
     case 'selByLayerElement':
       if (groupsToSelect.size === 1) {
         SelectOptions.triggerLayerElementActions(groups[0]);
-      }else {
+      } else {
         SelectOptions.triggerDefaultActions();
       }
       break;
 
     case 'selBySyllable':
-
       switch (groups.length) {
         case 1:
           // TODO change context if it is only a neume/nc.
           SelectOptions.triggerSyllableActions('singleSelect');
           break;
 
-        case 2:
+        default:
           // Check if this is a linked syllable split by a staff break
           // if they are linkable, user can toggle linked-sylls
-          if (Grouping.isLinkable('selBySyllable', groups)) { 
+          if (Grouping.isLinkable('selBySyllable', groups)) {
             SelectOptions.triggerSyllableActions('linkableSelect');
           }
-          else if (Grouping.isGroupable('selBySyllable', groups)) {
-            SelectOptions.triggerSyllableActions('multiSelect');
-          }
-          else {
-            SelectOptions.triggerSyllableActions('default');
-          }
-          break;
-
-        default:
           // if syllables are all located on one stave, they should be groupable
-          if (Grouping.isGroupable('selBySyllable', groups)) {
+          else if (Grouping.isGroupable('selBySyllable', groups)) {
             SelectOptions.triggerSyllableActions('multiSelect');
           }
           // if sylls are accross multiple staves
@@ -697,31 +760,41 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
             // Check if these neume components are part of the same neume
             if (groups[0].parentElement === groups[1].parentElement) {
               const children = Array.from(groups[0].parentElement.children);
-              
+
               // Check that neume components are adjacent
-              if (Math.abs(children.indexOf(groups[0]) - children.indexOf(groups[1])) === 1) {
-                
+              if (
+                Math.abs(
+                  children.indexOf(groups[0]) - children.indexOf(groups[1]),
+                ) === 1
+              ) {
                 // Check that second neume component is lower than first.
                 // Note that the order in the list may not be the same as the
                 // order by x-position.
-                let firstNC = (groups[0].children[0] as SVGUseElement);
-                let secondNC = (groups[1].children[0] as SVGUseElement);
+                let firstNC = groups[0].children[0] as SVGUseElement;
+                let secondNC = groups[1].children[0] as SVGUseElement;
 
-                let firstNCX  = firstNC.x.baseVal.value;
+                let firstNCX = firstNC.x.baseVal.value;
                 let secondNCX = secondNC.x.baseVal.value;
-                let firstNCY  = firstNC.y.baseVal.value;
+                let firstNCY = firstNC.y.baseVal.value;
                 let secondNCY = secondNC.y.baseVal.value;
 
                 // order nc's by x coord (left to right)
-                if ( (firstNCX > secondNCX) 
-                  || (firstNCX === secondNCX && firstNCY < secondNCY)) {
+                if (
+                  firstNCX > secondNCX ||
+                  (firstNCX === secondNCX && firstNCY < secondNCY)
+                ) {
                   [firstNC, secondNC] = [secondNC, firstNC];
-                  [firstNCX, firstNCY, secondNCX, secondNCY] = [secondNCX, secondNCY, firstNCX, firstNCY];
+                  [firstNCX, firstNCY, secondNCX, secondNCY] = [
+                    secondNCX,
+                    secondNCY,
+                    firstNCX,
+                    firstNCY,
+                  ];
                 }
 
                 // if stacked nc's/ligature (identical x), or descending nc's (y descends)
                 if (firstNCX === secondNCX || firstNCY < secondNCY) {
-                  Grouping.triggerGrouping('ligature'); 
+                  Grouping.triggerGrouping('ligature');
                   break;
                 }
               }
@@ -746,14 +819,14 @@ export async function selectAll (elements: Array<SVGGraphicsElement>, neonView: 
           SelectOptions.triggerBBoxActions();
           break;
         default:
-          groups.forEach(g => selectBBox(g, dragHandler, undefined));
+          groups.forEach((g) => selectBBox(g, dragHandler, undefined));
           break;
       }
       break;
     default:
       console.error('Unknown selection type. This should not have occurred.');
   }
-  
+
   // function changeStaffListener(): void {
   // try {
   // document.getElementById('changeStaff')

@@ -454,13 +454,8 @@ export function convertToVerovio(sbBasedMei: string): string {
     const syllableIdx = newSyllables.indexOf(syllable);
 
     // Validate toggle-linked syllable
-    if (syllable.hasAttribute('precedes') && syllable.hasAttribute('follows')) {
-      // Check if the syllable has both @precedes and @follows
-      invalidLinked = true;
-      invalidLinkedInfo += `- &lt;${syllable.tagName}&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')} has both @precedes and @follows\n`;
-    }
     // Check the precedes syllable
-    else if (syllable.hasAttribute('precedes')) {
+    if (syllable.hasAttribute('precedes')) {
       const info = checkPrecedesSyllable(syllable, syllableIdx, newSyllables);
       if (info) {
         invalidLinked = true;
@@ -468,7 +463,7 @@ export function convertToVerovio(sbBasedMei: string): string {
       }
     }
     // Check the follows syllable
-    else if (syllable.hasAttribute('follows')) {
+    if (syllable.hasAttribute('follows')) {
       const info = checkFollowsSyllable(syllable, newSyllables);
       if (info) {
         invalidLinked = true;
