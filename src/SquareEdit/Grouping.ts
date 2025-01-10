@@ -7,26 +7,26 @@ import NeonView from '../NeonView';
 import { EditorAction, ToggleLigatureAction } from '../Types';
 import { removeHandler, deleteButtonHandler } from './SelectOptions';
 
-
 /**
  * The NeonView parent to access editor actions.
  */
 let neonView: NeonView;
 
-
 /**
  * Set the neonView member.
  */
-export function initNeonView (view: NeonView): void {
+export function initNeonView(view: NeonView): void {
   neonView = view;
 }
-
 
 /**
  * Check if selected elements can be grouped or not
  * @returns true if can be grouped, false otherwise
  */
-export function isGroupable(selectionType: string, elements: Array<SVGGraphicsElement>): boolean {
+export function isGroupable(
+  selectionType: string,
+  elements: Array<SVGGraphicsElement>,
+): boolean {
   const groups = Array.from(elements.values()) as SVGGraphicsElement[];
 
   if (groups.length < 2) {
@@ -34,10 +34,11 @@ export function isGroupable(selectionType: string, elements: Array<SVGGraphicsEl
     return false;
   }
 
-  switch(selectionType) {
+  switch (selectionType) {
     case 'selByNeume':
       // if neumes are in same syllable, don't display grouping option
-      if (SelectTools.sharedLogicalParent(selectionType, elements)) return false;
+      if (SelectTools.sharedLogicalParent(selectionType, elements))
+        return false;
 
     default:
       // check if all selected elements are adjacent to each other
@@ -47,41 +48,134 @@ export function isGroupable(selectionType: string, elements: Array<SVGGraphicsEl
         return false;
       }
   }
-
 }
 
-
-function containsLinked (selectionType:string, elements?: Array<SVGGraphicsElement>) {
+function containsLinked(
+  selectionType: string,
+  elements?: Array<SVGGraphicsElement>,
+) {
   if (!elements) {
-    elements = Array.from(document.querySelectorAll('.selected')) as SVGGraphicsElement[];
+    elements = Array.from(
+      document.querySelectorAll('.selected'),
+    ) as SVGGraphicsElement[];
   }
   switch (selectionType) {
     case 'selBySyllable':
       for (const element of elements) {
-        if (element.hasAttribute('mei:follows') || element.hasAttribute('mei:precedes')) {
-          Notification.queueNotification('The action involves linked syllables, please untoggle them first', 'warning');
+        if (
+          element.hasAttribute('mei:follows') ||
+          element.hasAttribute('mei:precedes')
+        ) {
+          Notification.queueNotification(
+            'The action involves linked syllables, please untoggle them first',
+            'warning',
+          );
           return true;
         }
       }
       return false;
-    
+
     case 'selByNeume':
       for (const element of elements) {
-        if (element.parentElement.hasAttribute('mei:follows') || element.parentElement.hasAttribute('mei:precedes')) {
-          Notification.queueNotification('The action involves linked syllables, please untoggle them first', 'warning');
+        if (
+          element.parentElement.hasAttribute('mei:follows') ||
+          element.parentElement.hasAttribute('mei:precedes')
+        ) {
+          Notification.queueNotification(
+            'The action involves linked syllables, please untoggle them first',
+            'warning',
+          );
           return true;
         }
       }
       return false;
-    
+
     case 'selByNc':
       for (const element of elements) {
-        if (element.parentElement.parentElement.hasAttribute('mei:follows') || element.parentElement.parentElement.hasAttribute('mei:precedes')) {
-          Notification.queueNotification('The action involves linked syllables, please untoggle them first', 'warning');
+        if (
+          element.parentElement.parentElement.hasAttribute('mei:follows') ||
+          element.parentElement.parentElement.hasAttribute('mei:precedes')
+        ) {
+          Notification.queueNotification(
+            'The action involves linked syllables, please untoggle them first',
+            'warning',
+          );
           return true;
         }
       }
       return false;
+  }
+}
+
+function hasInvalidLinkedSyllable(
+  elements: Array<SVGGraphicsElement>,
+): boolean {
+  for (let idx = 0; idx < elements.length; idx++) {
+    const syllable = elements.at(idx);
+    if (syllable.hasAttribute('mei:precedes')) {
+      // Get xml:id of the next syllable (without the #, if it exists)
+      const nextSyllableId = syllable
+        .getAttribute('mei:precedes')
+        .replace('#', '');
+
+      // Find the next syllable and its index in the array
+      let nextSyllableIdx: number;
+      const nextSyllable = elements.find((element, idx) => {
+        if (element.id === nextSyllableId) {
+          nextSyllableIdx = idx;
+          return true;
+        }
+
+        return false;
+      });
+
+      // Condition 1: The next (following) syllable cannot be found
+      if (!nextSyllable) {
+        return true;
+      }
+
+      // Condition 2: The next syllable has been found, but the @follows attribute does NOT EXIST
+      if (!nextSyllable.hasAttribute('mei:follows')) {
+        return true;
+      }
+
+      // Condition 3: The next syllable's @follows attribute exists, but it is not in the correct format #id
+      if (nextSyllable.getAttribute('mei:follows') != '#' + syllable.id) {
+        return true;
+      }
+
+      // Condition 4:
+      // Since the @follows value is correct, a pair of syllables exist for the toggle-linked syllable.
+      // Check if the @follows syllable is the next syllable (index-wise) in the array:
+      if (nextSyllableIdx !== idx + 1) {
+        return true;
+      }
+    }
+    if (syllable.hasAttribute('mei:follows')) {
+      const prevSyllableId = syllable
+        .getAttribute('mei:follows')
+        .replace('#', '');
+      const prevSyllable = elements.find(
+        (syllable) => syllable.id === prevSyllableId,
+      );
+
+      // Condition 1: The previous syllable does not exist
+      if (!prevSyllable) {
+        return true;
+      }
+
+      // Condition 2: The previous syllable exists, but the @precedes attribute does NOT EXIST
+      if (!prevSyllable.hasAttribute('mei:precedes')) {
+        return true;
+      }
+
+      // Condition 3: The previous syllable's @precedes attribute exists, but it is not in the correct format #id
+      if (prevSyllable.getAttribute('mei:precedes') != '#' + syllable.id) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 
@@ -91,125 +185,176 @@ function containsLinked (selectionType:string, elements?: Array<SVGGraphicsEleme
  * @returns true is linked, false otherwise
  */
 export function isLinked(elements: Array<SVGGraphicsElement>): boolean {
-
-  // if number of elements is not 2, elements cannot be linked by definition
-  if (elements.length !== 2) return false;
-
-  // if precedes and follows attributes exist and their IDs match
-  if (((elements[0].getAttribute('mei:follows') === `#${elements[1].id}`) && 
-      (elements[1].getAttribute('mei:precedes') === `#${elements[0].id}`)) ||
-      ((elements[0].getAttribute('mei:precedes') === '#' + elements[1].id) &&
-      (elements[1].getAttribute('mei:follows') === '#' + elements[0].id))) {
-    return true;
+  // every element should be linked
+  for (const element of elements) {
+    if (
+      !element.hasAttribute('mei:precedes') &&
+      !element.hasAttribute('mei:follows')
+    )
+      return false;
   }
-  else {
-    return false;
-  }
+  return true;
 }
 
+/**
+ * Assuming all elements are valid,
+ * check if the elements can be linked:
+ * 1. sort elements based on their order in the DOM
+ * 2. ensure elements are adjacent in the DOM
+ * 3. ensure elements belong to adjacent staves
+ * 4. check if can be linked:
+ *    4.1 if exactly two elements, both needs to be unlinked
+ *    4.2 if more than two elements, only one element can be unlinked,
+ *        at either beginning or end of the sequence
+ * @param elements elements to be considered
+ * @returns true can be linked
+ */
+export function canBeLinked(elements: Array<SVGGraphicsElement>): boolean {
+  // 1. Sort elements based on their order in the DOM
+  elements.sort((a, b) => {
+    const staffA = a.closest('.staff');
+    const staffB = b.closest('.staff');
+    return staffA.compareDocumentPosition(staffB) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1
+      : 1;
+  });
+
+  const staves = Array.from(document.querySelectorAll('.staff'));
+  const syllables = Array.from(document.querySelectorAll('.syllable'));
+
+  // 2. Ensure syllables are adjacent in the DOM
+  for (let i = 0; i < elements.length - 1; i++) {
+    const current = elements[i];
+    const next = elements[i + 1];
+    const currentSyllableIndex = syllables.indexOf(current);
+    const nextSyllableIndex = syllables.indexOf(next);
+    if (nextSyllableIndex - currentSyllableIndex !== 1) {
+      return false; // Staves must be adjacent
+    }
+    // 3. Ensure syllables belong to adjacent staves
+    const currentStaff = current.closest('.staff');
+    const nextStaff = next.closest('.staff');
+
+    const currentStaffIndex = staves.indexOf(currentStaff as HTMLElement);
+    const nextStaffIndex = staves.indexOf(nextStaff as HTMLElement);
+    if (nextStaffIndex - currentStaffIndex !== 1) {
+      return false; // Staves must be adjacent
+    }
+  }
+
+  // 4.1 Handle case for exactly two syllables
+  if (elements.length === 2) {
+    return elements.every(
+      (element) =>
+        !element.hasAttribute('mei:precedes') &&
+        !element.hasAttribute('mei:follows'),
+    );
+  }
+
+  // 4.2 Handle case for more than two syllables
+  const unlinkedElements = elements.filter(
+    (element) =>
+      !element.hasAttribute('mei:precedes') &&
+      !element.hasAttribute('mei:follows'),
+  );
+
+  if (unlinkedElements.length !== 1) {
+    return false; // Only one unlinked syllable is allowed
+  }
+
+  // The unlinked syllable should be at the beginning or end
+  const firstUnlinked = unlinkedElements[0];
+
+  return (
+    elements.indexOf(firstUnlinked) === 0 ||
+    elements.indexOf(firstUnlinked) === elements.length - 1
+  );
+}
 
 /**
  * Check if the selected elements can be linked or unlikned.
  * @param selectionType Current selection mode. Only certain elements can be linked
- * @param elements The elements under question 
+ * @param elements The elements under question
  * @returns true if user should be able to link or un-link elements, false otherwise
  */
-export function isLinkable(selectionType: string, elements: Array<SVGGraphicsElement>): boolean {
+export function isLinkable(
+  selectionType: string,
+  elements: Array<SVGGraphicsElement>,
+): boolean {
+  // cannot toggle link for syllable selection if number of selected
+  // syllables is smaller than 2
+  if (elements.length < 2) {
+    return false;
+  }
 
-  switch(elements.length) {
-    // only a selection of length 2 can lead to option to toggle syllable link
-    case 2:
-      // only Syllables can be linked or unlinked (?)
-      if (selectionType !== 'selBySyllable') return false;
-    
-      // if ALREADY linked
-      if (isLinked([elements[0], elements[1]])) {
-        return true;
-      }
-      // if CAN be linked
-      else {
-        // Check if this *could* be a selection with a single logical syllable split by a staff break. 
-        // Check if these are adjacent staves (logically)
-        if (SelectTools.isMultiStaveSelection(elements)) {
-          const staff0 = elements[0].closest('.staff');
-          const staff1 = elements[1].closest('.staff');
-          const staffChildren = Array.from(staff0.parentElement.children);
+  // only Syllables can be linked or unlinked (?)
+  if (selectionType !== 'selBySyllable') return false;
 
-          // Check if one syllable is the last in the first staff and the other is the first in the second.
-          // Determine which staff is first.
-          const firstStaff = (staffChildren.indexOf(staff0) < staffChildren.indexOf(staff1)) ? staff0 : staff1;
-          const secondStaff = (firstStaff.id === staff0.id) ? staff1 : staff0;
-          const firstLayer = firstStaff.querySelector('.layer');
-          const secondLayer = secondStaff.querySelector('.layer');
-    
-          // Check that the first staff has either syllable as the last syllable
-          const firstSyllableChildren = Array.from(firstLayer.children).filter((elem: HTMLElement) => elem.classList.contains('syllable'));
-          const secondSyllableChildren = Array.from(secondLayer.children).filter((elem: HTMLElement) => elem.classList.contains('syllable'));    
-          const lastSyllable = firstSyllableChildren[firstSyllableChildren.length - 1];
-          const firstSyllable = secondSyllableChildren[0];
-    
-          if (lastSyllable.id === elements[0].id && firstSyllable.id === elements[1].id) {
-            return true;
-          } 
-          else if (lastSyllable.id === elements[1].id && firstSyllable.id === elements[0].id) {
-            return true;
-          }
-        }
-      }
-      
-    // cannot toggle link for syllable selection if number of selected
-    // syllables is not equal to 2
-    default:
-      return false;
+  // Check if has invalid linked syllables
+  if (hasInvalidLinkedSyllable(elements)) {
+    Notification.queueNotification(
+      'The selected syllables include invalid linked syllable(s)!',
+      'warning',
+    );
+    return false;
+  }
+
+  // if ALREADY linked
+  if (isLinked(elements)) {
+    return true;
+  }
+  // if CAN be linked
+  else if (canBeLinked(elements)) {
+    return true;
   }
 
   return false;
 }
 
-
 /**
  * Merge selected staves
  */
-export function mergeStaves (): void {
+export function mergeStaves(): void {
   const systems = document.querySelectorAll('.staff.selected');
   const elementIds = [];
-  systems.forEach(staff => {
+  systems.forEach((staff) => {
     elementIds.push(staff.id);
   });
   const editorAction: EditorAction = {
     action: 'merge',
     param: {
-      elementIds: elementIds
-    }
+      elementIds: elementIds,
+    },
   };
-  neonView.edit(editorAction, neonView.view.getCurrentPageURI()).then((result) => {
-    if (result) {
-      Notification.queueNotification('Staff Merged', 'success');
-      SelectOptions.endOptionsSelection();
-      neonView.updateForCurrentPage();
-    } else {
-      Notification.queueNotification('Merge Failed', 'error');
-    }
-  });
+  neonView
+    .edit(editorAction, neonView.view.getCurrentPageURI())
+    .then((result) => {
+      if (result) {
+        Notification.queueNotification('Staff Merged', 'success');
+        SelectOptions.endOptionsSelection();
+        neonView.updateForCurrentPage();
+      } else {
+        Notification.queueNotification('Merge Failed', 'error');
+      }
+    });
 }
-
 
 /**
  * Trigger the grouping selection menu.
  * @param type - The grouping type: nc, neume, syl, ligatureNc, or ligature
  */
-export function triggerGrouping (type: string): void {
+export function triggerGrouping(type: string): void {
   const moreEdit = document.getElementById('moreEdit');
   moreEdit.parentElement.classList.remove('hidden');
   moreEdit.innerHTML += Contents.groupingMenu[type];
   initGroupingListeners();
 }
 
-
 /**
  * Remove the grouping selection menu.
  */
-export function endGroupingSelection (): void {
+export function endGroupingSelection(): void {
   const moreEdit = document.getElementById('moreEdit');
   moreEdit.innerHTML = '';
   moreEdit.parentElement.classList.add('hidden');
@@ -217,11 +362,10 @@ export function endGroupingSelection (): void {
   document.body.removeEventListener('keydown', keydownListener);
 }
 
-
 /**
  * The grouping dropdown listener.
  */
-export function initGroupingListeners (): void {
+export function initGroupingListeners(): void {
   const del = document.getElementById('delete');
   del.removeEventListener('click', removeHandler);
   del.addEventListener('click', removeHandler);
@@ -231,8 +375,8 @@ export function initGroupingListeners (): void {
   try {
     document.getElementById('mergeSyls').addEventListener('click', () => {
       if (containsLinked(SelectTools.getSelectionType())) return;
-      const elementIds = getChildrenIds().filter(e =>
-        document.getElementById(e).classList.contains('neume')
+      const elementIds = getChildrenIds().filter((e) =>
+        document.getElementById(e).classList.contains('neume'),
       );
       groupingAction('group', 'neume', elementIds);
     });
@@ -241,8 +385,8 @@ export function initGroupingListeners (): void {
   try {
     document.getElementById('groupNeumes').addEventListener('click', () => {
       if (containsLinked(SelectTools.getSelectionType())) return;
-      const elementIds = getIds().filter(e =>
-        document.getElementById(e).classList.contains('neume')
+      const elementIds = getIds().filter((e) =>
+        document.getElementById(e).classList.contains('neume'),
       );
       groupingAction('group', 'neume', elementIds);
     });
@@ -250,8 +394,8 @@ export function initGroupingListeners (): void {
 
   try {
     document.getElementById('groupNcs').addEventListener('click', () => {
-      const elementIds = getIds().filter(e =>
-        document.getElementById(e).classList.contains('nc')
+      const elementIds = getIds().filter((e) =>
+        document.getElementById(e).classList.contains('nc'),
       );
       groupingAction('group', 'nc', elementIds);
     });
@@ -272,25 +416,29 @@ export function initGroupingListeners (): void {
   } catch (e) {}
 
   try {
-    document.getElementById('toggle-ligature').addEventListener('click', async () => {
-      const elementIds = getIds();
-      
-      const editorAction: ToggleLigatureAction = {
-        action: 'toggleLigature',
-        param: {
-          elementIds: elementIds
-        }
-      };
-      neonView.edit(editorAction, neonView.view.getCurrentPageURI()).then((result) => {
-        if (result) {
-          Notification.queueNotification('Ligature Toggled', 'success');
-        } else {
-          Notification.queueNotification('Ligature Toggle Failed', 'error');
-        }
-        endGroupingSelection();
-        neonView.updateForCurrentPage();
+    document
+      .getElementById('toggle-ligature')
+      .addEventListener('click', async () => {
+        const elementIds = getIds();
+
+        const editorAction: ToggleLigatureAction = {
+          action: 'toggleLigature',
+          param: {
+            elementIds: elementIds,
+          },
+        };
+        neonView
+          .edit(editorAction, neonView.view.getCurrentPageURI())
+          .then((result) => {
+            if (result) {
+              Notification.queueNotification('Ligature Toggled', 'success');
+            } else {
+              Notification.queueNotification('Ligature Toggle Failed', 'error');
+            }
+            endGroupingSelection();
+            neonView.updateForCurrentPage();
+          });
       });
-    });
   } catch (e) {}
 
   try {
@@ -300,14 +448,15 @@ export function initGroupingListeners (): void {
   } catch (e) {}
 }
 
-
 /**
  * Grouping/Ungrouping keybinding event listener
  */
-const keydownListener = function(e) {
+const keydownListener = function (e) {
   if (e.key === 'g') {
     // get selected elements to check if they can be groupeds
-    const elements = Array.from(document.querySelectorAll('.selected')) as SVGGraphicsElement[];
+    const elements = Array.from(
+      document.querySelectorAll('.selected'),
+    ) as SVGGraphicsElement[];
     if (elements.length == 0) return;
 
     const selectionType = SelectTools.getSelectionType();
@@ -324,12 +473,11 @@ const keydownListener = function(e) {
         }
         // check if groupable before grouping
         else if (isGroupable(selectionType, elements)) {
-          const elementIds = getChildrenIds().filter(e =>
-            document.getElementById(e).classList.contains('neume')
+          const elementIds = getChildrenIds().filter((e) =>
+            document.getElementById(e).classList.contains('neume'),
           );
           groupingAction('group', 'neume', elementIds);
-
-        } 
+        }
         // can only ungroup if length is 1 (one syllable selected)
         // cannot ungroup if multiple syllables are selected
         else if (elements.length === 1) {
@@ -367,12 +515,13 @@ const keydownListener = function(e) {
         break;
 
       default:
-        console.error(`Can't perform grouping/ungrouping action on selection type ${selectionType}.`);
+        console.error(
+          `Can't perform grouping/ungrouping action on selection type ${selectionType}.`,
+        );
         return;
     }
   }
 };
-
 
 /**
  * Form and execute a group/ungroup action.
@@ -380,43 +529,127 @@ const keydownListener = function(e) {
  * @param groupType - The type of elements to group. Either "neume" or "nc".
  * @param elementIds - The IDs of the elements.
  */
-function groupingAction (action: 'group' | 'ungroup', groupType: 'neume' | 'nc', elementIds: string[]): void {
+function groupingAction(
+  action: 'group' | 'ungroup',
+  groupType: 'neume' | 'nc',
+  elementIds: string[],
+): void {
   const editorAction: EditorAction = {
     action: action,
     param: {
       groupType: groupType,
-      elementIds: elementIds
-    }
+      elementIds: elementIds,
+    },
   };
-  neonView.edit(editorAction, neonView.view.getCurrentPageURI()).then((result) => {
-    if (result) {
-      if (action === 'group') {
-        Notification.queueNotification('Grouping Success', 'success');
+  neonView
+    .edit(editorAction, neonView.view.getCurrentPageURI())
+    .then((result) => {
+      if (result) {
+        if (action === 'group') {
+          Notification.queueNotification('Grouping Success', 'success');
+        } else {
+          Notification.queueNotification('Ungrouping Success', 'success');
+        }
       } else {
-        Notification.queueNotification('Ungrouping Success', 'success');
+        if (action === 'group') {
+          Notification.queueNotification('Grouping Failed', 'error');
+        } else {
+          Notification.queueNotification('Ungrouping Failed', 'error');
+        }
       }
-    } else {
-      if (action === 'group') {
-        Notification.queueNotification('Grouping Failed', 'error');
-      } else {
-        Notification.queueNotification('Ungrouping Failed', 'error');
-      }
-    }
-    neonView.updateForCurrentPage();
+      neonView.updateForCurrentPage();
 
-    // Prompt user to confirm if Neon does not re cognize contour
-    if (groupType === 'nc') {
-      const neumeParent = document.getElementById(elementIds[0]).parentElement;
-      const ncs = Array.from(neumeParent.children) as SVGGraphicsElement[];
-      const contour = neonView.info.getContour(ncs);
-      if (contour === undefined) {
-        Warnings.groupingNotRecognized();
+      // Prompt user to confirm if Neon does not re cognize contour
+      if (groupType === 'nc') {
+        const neumeParent = document.getElementById(
+          elementIds[0],
+        ).parentElement;
+        const ncs = Array.from(neumeParent.children) as SVGGraphicsElement[];
+        const contour = neonView.info.getContour(ncs);
+        if (contour === undefined) {
+          Warnings.groupingNotRecognized();
+        }
       }
-    }
-    endGroupingSelection();
-  });
+      endGroupingSelection();
+    });
 }
 
+function unlink(elementIds: string[]): Array<EditorAction> {
+  const param = new Array<EditorAction>();
+  for (const id of elementIds) {
+    const element = document.getElementById(id);
+    if (element.getAttribute('mei:precedes')) {
+      param.push({
+        action: 'set',
+        param: {
+          elementId: id,
+          attrType: 'precedes',
+          attrValue: '',
+        },
+      });
+    }
+    if (element.getAttribute('mei:follows')) {
+      param.push({
+        action: 'set',
+        param: {
+          elementId: id,
+          attrType: 'follows',
+          attrValue: '',
+        },
+      });
+      param.push({
+        action: 'setText',
+        param: {
+          elementId: id,
+          text: '',
+        },
+      });
+    }
+  }
+
+  return param;
+}
+
+// Utility function to get an element by ID and ensure it's an SVGGraphicsElement
+function getSVGGraphicsElementById(id: string): SVGGraphicsElement | null {
+  const element = document.getElementById(id);
+  if (element instanceof SVGGraphicsElement) {
+    return element;
+  }
+  return null;
+}
+
+function getToggleSyllableIds(
+  elements: Array<SVGGraphicsElement>,
+): [SVGGraphicsElement, SVGGraphicsElement] {
+  // Sort elements based on their order in the DOM
+  elements.sort((a, b) => {
+    const staffA = a.closest('.staff');
+    const staffB = b.closest('.staff');
+    return staffA.compareDocumentPosition(staffB) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1
+      : 1;
+  });
+
+  if (elements.length === 2) {
+    return [elements[0], elements[1]];
+  }
+
+  const unlinkedElement = elements.find(
+    (el) => !el.hasAttribute('mei:precedes') && !el.hasAttribute('mei:follows'),
+  );
+
+  if (unlinkedElement) {
+    const index = elements.indexOf(unlinkedElement);
+
+    if (index === 0) {
+      return [elements[index], elements[index + 1]];
+    } else if (index === elements.length - 1) {
+      return [elements[index - 1], elements[index]];
+    }
+  }
+}
 
 /**
  * Determine what action (link/unlink) to perform when user clicks on "Toggle Linked Syllable"
@@ -426,90 +659,34 @@ function toggleLinkedSyllables() {
   const elementIds = getIds();
   const chainAction: EditorAction = {
     action: 'chain',
-    param: []
+    param: [],
   };
   const param = new Array<EditorAction>();
-  if (document.getElementById(elementIds[0]).getAttribute('mei:precedes')) {
-    param.push({
-      action: 'set',
-      param: {
-        elementId: elementIds[0],
-        attrType: 'precedes',
-        attrValue: ''
-      }
-    });
-    param.push({
-      action: 'set',
-      param: {
-        elementId: elementIds[1],
-        attrType: 'follows',
-        attrValue: ''
-      }
-    });
-    param.push({
-      action: 'setText',
-      param: {
-        elementId: elementIds[1],
-        text: ''
-      }
-    });
-  } else if (document.getElementById(elementIds[0]).getAttribute('mei:follows')) {
-    param.push({
-      action: 'set',
-      param: {
-        elementId: elementIds[0],
-        attrType: 'follows',
-        attrValue: ''
-      }
-    });
-    param.push({
-      action: 'set',
-      param: {
-        elementId: elementIds[1],
-        attrType: 'precedes',
-        attrValue: ''
-      }
-    });
-    param.push({
-      action: 'setText',
-      param: {
-        elementId: elementIds[0],
-        text: ''
-      }
-    });
+
+  const elements = elementIds
+    .map(getSVGGraphicsElementById) // Map IDs to SVGGraphicsElement or null
+    .filter((el): el is SVGGraphicsElement => el !== null);
+
+  if (isLinked(elements)) {
+    param.push(...unlink(elementIds));
   } else {
-    // Associate syllables. Will need to find which is first. Use staves.
-    const syllable0 = document.getElementById(elementIds[0]);
-    const syllable1 = document.getElementById(elementIds[1]);
-    const staff0 = syllable0.closest('.system');
-    const staff1 = syllable1.closest('.system');
-    const staffChildren = Array.from(staff0.parentElement.children).filter((elem: HTMLElement) => elem.classList.contains('system'));
-
-    let firstSyllable, secondSyllable;
-    // Determine first syllable comes first by staff
-    if (staffChildren.indexOf(staff0) < staffChildren.indexOf(staff1)) {
-      firstSyllable = syllable0;
-      secondSyllable = syllable1;
-    } else {
-      firstSyllable = syllable1;
-      secondSyllable = syllable0;
-    }
-
+    const [firstSyllable, secondSyllable] = getToggleSyllableIds(elements);
+    console.log(firstSyllable.id, secondSyllable.id);
     param.push({
       action: 'set',
       param: {
         elementId: firstSyllable.id,
         attrType: 'precedes',
-        attrValue: '#' + secondSyllable.id
-      }
+        attrValue: '#' + secondSyllable.id,
+      },
     });
     param.push({
       action: 'set',
       param: {
         elementId: secondSyllable.id,
         attrType: 'follows',
-        attrValue: '#' + firstSyllable.id
-      }
+        attrValue: '#' + firstSyllable.id,
+      },
     });
     // Delete syl on second syllable
     const syl = secondSyllable.querySelector('.syl');
@@ -517,49 +694,57 @@ function toggleLinkedSyllables() {
       param.push({
         action: 'remove',
         param: {
-          elementId: syl.id
-        }
+          elementId: syl.id,
+        },
       });
     }
   }
-  chainAction.param = param;
-  neonView.edit(chainAction, neonView.view.getCurrentPageURI()).then((result) => {
-    if (result) {
-      Notification.queueNotification('Toggled Syllable Link');
-    } else {
-      Notification.queueNotification('Failed to Toggle Syllable Link');
-    }
-    endGroupingSelection();
-    neonView.updateForCurrentPage();
-  });
-}
 
+  chainAction.param = param;
+  neonView
+    .edit(chainAction, neonView.view.getCurrentPageURI())
+    .then((result) => {
+      if (result) {
+        Notification.queueNotification('Toggled Syllable Link', 'success');
+      } else {
+        Notification.queueNotification(
+          'Failed to Toggle Syllable Link',
+          'error',
+        );
+      }
+      endGroupingSelection();
+      neonView.updateForCurrentPage();
+    });
+}
 
 /**
  * @returns The IDs of selected elements.
  */
-function getIds (): string[] {
+function getIds(): string[] {
   const ids = [];
   const elements = Array.from(document.getElementsByClassName('selected'));
-  elements.forEach(el => {
+  elements.forEach((el) => {
     ids.push(el.id);
   });
   return ids;
 }
 
-
 /**
  * @returns The IDs of the selected elements' children.
  */
-function getChildrenIds (): string[] {
+function getChildrenIds(): string[] {
   const childrenIds = [];
   const elements = Array.from(document.getElementsByClassName('selected'));
-  elements.forEach(el => {
-    if (el.classList.contains('divLine') || el.classList.contains('accid') || el.classList.contains('clef')) {
+  elements.forEach((el) => {
+    if (
+      el.classList.contains('divLine') ||
+      el.classList.contains('accid') ||
+      el.classList.contains('clef')
+    ) {
       return;
     }
     const children = Array.from(el.children);
-    children.forEach(ch => {
+    children.forEach((ch) => {
       childrenIds.push(ch.id);
     });
   });
