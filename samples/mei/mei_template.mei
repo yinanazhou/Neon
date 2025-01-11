@@ -12,8 +12,9 @@
         </fileDesc>
     </meiHead>
     <music>
-        <facsimile>
+        <facsimile type="transcription">
             <surface>
+                <zone rotate="0.0"/>
             </surface>
         </facsimile>
         <body>
@@ -25,6 +26,12 @@
                         </staffGrp>
                     </scoreDef>
                     <section>
+                        <staff n="1">
+                            <layer n="1">
+                                <pb/>
+                                <sb n="1"/>
+                            </layer>
+                        </staff>
                     </section>
                 </score>
             </mdiv>
