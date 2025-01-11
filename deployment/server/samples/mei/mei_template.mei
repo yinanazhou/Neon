@@ -22,7 +22,7 @@
                 <score>
                     <scoreDef>
                         <staffGrp>
-                            <staffDef n="1" notationtype="neume" lines="4" clef.shape="C" clef.line="3"/>
+                            <staffDef n="1" notationtype="neume" lines="4" clef.shape="C" clef.line="4"/>
                         </staffGrp>
                     </scoreDef>
                     <section>
