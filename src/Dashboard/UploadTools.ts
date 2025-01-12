@@ -10,37 +10,34 @@ const templatePath = 'samples/mei/mei_template.mei';
 fm.setMeiTemplate(templatePath);
 
 // Adds new files to upload pairing container and filemanager, returns list of rejected files
-export function addNewFiles( files: File[] ): File[] {
+export function addNewFiles(files: File[]): File[] {
   const mei_container: HTMLDivElement = document.querySelector('#mei_list');
   const image_container: HTMLDivElement = document.querySelector('#image_list');
 
   const rejectFiles: File[] = [];
-  files.forEach( file => {
+  files.forEach((file) => {
     const ext = file.name.split('.').pop();
 
-    if ( ext === 'mei' ) {
+    if (ext === 'mei') {
       const unpairedItem = createUnpairedItem(file.name, 'mei');
       mei_container.appendChild(unpairedItem);
       fm.addFile(file);
-    }
-    else if ( ['png','jpg','jpeg'].includes(ext) ) {
+    } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
       const unpairedItem = createUnpairedItem(file.name, 'image');
       image_container.appendChild(unpairedItem);
       fm.addFile(file);
-    }
-    else if ( ext === 'jsonld' ) {
+    } else if (ext === 'jsonld') {
       // // remove manuscript support for the immediate future!
       // const manuscriptFolio = createManuscriptFolio(file.name);
       // manuscript_container.appendChild(manuscriptFolio);
       // fm.addFile(file);
       // fm.addManuscript(file.name);
-    }
-    else {
+    } else {
       rejectFiles.push(file);
     }
   });
   return rejectFiles;
-} 
+}
 
 function createUnpairedItem(filename: string, group: string): HTMLDivElement {
   if (group !== 'mei' && group !== 'image') return;
@@ -75,7 +72,7 @@ function createUnpairedItem(filename: string, group: string): HTMLDivElement {
   node.appendChild(label);
   node.appendChild(delBtn);
 
-  delBtn.addEventListener('click', function() {
+  delBtn.addEventListener('click', function () {
     node.remove();
   });
 
@@ -83,18 +80,23 @@ function createUnpairedItem(filename: string, group: string): HTMLDivElement {
 }
 
 export function handleMakePair(): void {
-  const paired_container: HTMLDivElement = document.querySelector('#paired_list');
+  const paired_container: HTMLDivElement =
+    document.querySelector('#paired_list');
 
   // get and check if selected radio exists
-  const selectedMeiElement: HTMLInputElement = document.querySelector('input[name="mei_radio_group"]:checked');
-  const selectedImageElement: HTMLInputElement = document.querySelector('input[name="image_radio_group"]:checked');
+  const selectedMeiElement: HTMLInputElement = document.querySelector(
+    'input[name="mei_radio_group"]:checked',
+  );
+  const selectedImageElement: HTMLInputElement = document.querySelector(
+    'input[name="image_radio_group"]:checked',
+  );
   if (selectedMeiElement === null || selectedImageElement === null) return;
-  
+
   let mei_filename = selectedMeiElement.value;
   const image_filename = selectedImageElement.value;
   let isCreated = false;
 
-  if (selectedMeiElement.value === 'create_mei'){
+  if (selectedMeiElement.value === 'create_mei') {
     isCreated = true;
     // Change extension
     const fn = image_filename.split('.');
@@ -108,14 +110,19 @@ export function handleMakePair(): void {
     fm.getImgDimension(image_filename)
       .then((dimensions) => {
         const { width, height, staffSpace } = dimensions;
-        const newMeiFile = fm.createMeiFile(mei_filename, width, height, staffSpace);
+        const newMeiFile = fm.createMeiFile(
+          mei_filename,
+          width,
+          height,
+          staffSpace,
+        );
         fm.addFile(newMeiFile);
       })
       .catch((error) => {
         console.error(error.message);
       });
   }
-  const filename = mei_filename.substring(0, mei_filename.length-4);
+  const filename = mei_filename.substring(0, mei_filename.length - 4);
   // make and append UI element
   const paired_el = createPairedFolio(filename, mei_filename, image_filename);
   paired_container.appendChild(paired_el);
@@ -126,7 +133,11 @@ export function handleMakePair(): void {
   selectedImageElement.parentElement.parentElement.remove();
 }
 
-function createPairedFolio(filename: string, mei_filename: string, image_filename: string): HTMLDivElement {
+function createPairedFolio(
+  filename: string,
+  mei_filename: string,
+  image_filename: string,
+): HTMLDivElement {
   const mei_container: HTMLDivElement = document.querySelector('#mei_list');
   const image_container: HTMLDivElement = document.querySelector('#image_list');
 
@@ -138,7 +149,7 @@ function createPairedFolio(filename: string, mei_filename: string, image_filenam
   const folio_filename = document.createElement('div');
   folio_filename.classList.add('folio-filename');
   folio_filename.innerHTML = formatFilename(filename, 50);
-  folio.appendChild(folio_filename); 
+  folio.appendChild(folio_filename);
 
   function handleUnpair() {
     // remove folio from UI
@@ -165,59 +176,79 @@ function createPairedFolio(filename: string, mei_filename: string, image_filenam
   return folio;
 }
 
-export async function handleUploadAllDocuments(currentFolder: IFolder): Promise<unknown> {
-  const folioPromises = fm.getFolios()
-    .map( async ([name, mei, image]: [string, File, File]) => {
+export async function handleUploadAllDocuments(
+  currentFolder: IFolder,
+): Promise<{ status: string; value?: string; reason?: any }[]> {
+  const folioPromises = fm
+    .getFolios()
+    .map(async ([name, mei, image]: [string, File, File]) => {
       const id = uuidv4();
       return await uploadFolio(id, name, mei, image, currentFolder);
     });
-  
+
   const manuscriptPromises = []; //fm.getManuscripts()
   // .map( async (file: File) => {
   //   return await uploadManuscript(file);
   // });
 
-  const promises = [...folioPromises, ...manuscriptPromises]
-    .map(p => Promise.resolve(p)
-      .then(value => ({ status: 'fulfilled', value }), reason => ({ status: 'rejected', reason }))
-    );
-  
+  const promises = [...folioPromises, ...manuscriptPromises].map((p) =>
+    Promise.resolve(p).then(
+      (value) => ({ status: 'fulfilled', value }),
+      (reason) => ({ status: 'rejected', reason }),
+    ),
+  );
+
   fm.clear();
   return Promise.all(promises);
 }
 
-async function uploadFolio(id: string, name: string, mei: File, image: File, currentFolder: IFolder): Promise<boolean> {
-  const newName = fnConflictHandler(name, FileSystemTools.getAllNames(currentFolder));
-  return createManifest(id, newName, mei, image)
-    .then(manifest => {
-      const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/ld+json' });
-      const isSingle = true;
-      return addDocument(id, newName, manifestBlob, isSingle);
-    })
-    // add to dashboard FileSystem
-    .then(succeeded => {
-      if (succeeded) {
-        const datetime = new Date().toLocaleString();
-        const fileEntry = FileSystemTools.createFile(newName, id);
-        const folioEntry = FileSystemTools.addMetadata(fileEntry, { type: 'folio', created_on: datetime });
-        const isAdded = FileSystemTools.addEntry(folioEntry, currentFolder);
-        return isAdded;
-      }
-      else {
-        console.log('failed to uploadFolio: ' + name);
-        return false;
-      }
-    });
+async function uploadFolio(
+  id: string,
+  name: string,
+  mei: File,
+  image: File,
+  currentFolder: IFolder,
+): Promise<string | null> {
+  const newName = fnConflictHandler(
+    name,
+    FileSystemTools.getAllNames(currentFolder),
+  );
+  return (
+    createManifest(id, newName, mei, image)
+      .then((manifest) => {
+        const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {
+          type: 'application/ld+json',
+        });
+        const isSingle = true;
+        return addDocument(id, newName, manifestBlob, isSingle);
+      })
+      // add to dashboard FileSystem
+      .then((succeeded) => {
+        if (succeeded) {
+          const datetime = new Date().toLocaleString();
+          const fileEntry = FileSystemTools.createFile(newName, id);
+          const folioEntry = FileSystemTools.addMetadata(fileEntry, {
+            type: 'folio',
+            created_on: datetime,
+          });
+          const isAdded = FileSystemTools.addEntry(folioEntry, currentFolder);
+          return isAdded ? newName : null;
+        } else {
+          console.log('failed to uploadFolio: ' + name);
+          return null;
+        }
+      })
+  );
 }
 
 // async function uploadManuscript(manuscript: File): Promise<boolean> {
 //   return addEntry(manuscript.name, manuscript, false);
 // }
 
-export async function sortFileByName(sortByNameBtn: Element): Promise<void>  {
+export async function sortFileByName(sortByNameBtn: Element): Promise<void> {
   const fileList = sortByNameBtn.parentElement.nextElementSibling;
   const fileElements = Array.from(fileList.children);
-  
+
   let isAscending = sortByNameBtn.classList.contains('arrow-up');
 
   if (isAscending) {
@@ -235,10 +266,12 @@ export async function sortFileByName(sortByNameBtn: Element): Promise<void>  {
   fileElements.sort((a, b) => {
     const nameA = a.textContent.trim();
     const nameB = b.textContent.trim();
-    return isAscending ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    return isAscending
+      ? nameA.localeCompare(nameB)
+      : nameB.localeCompare(nameA);
   });
 
-  fileElements.forEach(element => {
+  fileElements.forEach((element) => {
     fileList.appendChild(element);
   });
 
@@ -268,14 +301,21 @@ export async function sortFileByName(sortByNameBtn: Element): Promise<void>  {
 
 // Limit filename length
 export function formatFilename(filename: string, maxLen: number): string {
-  const chunkLen = Math.floor(maxLen/2);
+  const chunkLen = Math.floor(maxLen / 2);
   const len = filename.length;
   if (len <= maxLen) return filename;
-  else return `${filename.substring(0,chunkLen-1)}...${filename.substring(len-chunkLen+2, len)}`;
+  else
+    return `${filename.substring(0, chunkLen - 1)}...${filename.substring(
+      len - chunkLen + 2,
+      len,
+    )}`;
 }
 
 // Renames file if there are naming conflicts, in the form of 'foobar (1)'
-export function fnConflictHandler(filename: string, existingNames: string[]): string {
+export function fnConflictHandler(
+  filename: string,
+  existingNames: string[],
+): string {
   let newFilename = filename;
   let counter = 1;
 
