@@ -317,9 +317,17 @@ export function convertToVerovio(sbBasedMei: string): string {
   }
 
   // Check syllable without neume
+  // Check divLine inside empty syllable
+  // Check accid inside empty syllable
   const syllables = Array.from(mei.getElementsByTagName('syllable'));
   let hasEmptySyllable = false;
   let hasEmptyNeume = false;
+  let hasInvalidDivLine = false;
+  let invalidDivLineInfo =
+    'The following divLine(s) are the only element inside the syllable(s): \n\n';
+  let hasInvalidAccid = false;
+  let invalidAccidInfo =
+    'The following accid(s) are the only element inside the syllable(s): \n\n';
   let emptySyllableInfo = 'The following syllable(s) have no neumes: \n\n';
   let emptyNeumeInfo = 'The following neume(s) have no neume components: \n\n';
   for (const syllable of syllables) {
@@ -328,6 +336,18 @@ export function convertToVerovio(sbBasedMei: string): string {
       emptySyllableInfo += `- &lt;${
         syllable.tagName
       }&gt; with xml:id: ${syllable.getAttribute('xml:id')}\n`;
+      if (syllable.getElementsByTagName('divLine').length > 0) {
+        hasInvalidDivLine = true;
+        invalidDivLineInfo += `- &lt;divLine&gt; inside &lt;syllable&gt; with xml:id: ${syllable.getAttribute(
+          'xml:id',
+        )}\n`;
+      }
+      if (syllable.getElementsByTagName('accid').length > 0) {
+        hasInvalidAccid = true;
+        invalidAccidInfo += `- &lt;accid&gt; inside &lt;syllable&gt; with xml:id: ${syllable.getAttribute(
+          'xml:id',
+        )}\n`;
+      }
     }
 
     // Check neume without neume component
@@ -368,6 +388,20 @@ export function convertToVerovio(sbBasedMei: string): string {
       'This file contains neume(s) without neume component!',
       'warning',
       emptyNeumeInfo,
+    );
+  }
+  if (hasInvalidDivLine) {
+    Notification.queueNotification(
+      'This file contains divLine(s) inside empty syllable(s)!',
+      'warning',
+      invalidDivLineInfo,
+    );
+  }
+  if (hasInvalidAccid) {
+    Notification.queueNotification(
+      'This file contains accid(s) inside empty syllable(s)!',
+      'warning',
+      invalidAccidInfo,
     );
   }
 
