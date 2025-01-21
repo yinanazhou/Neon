@@ -6,9 +6,13 @@ import * as Notification from '../utils/Notification';
 // refer to this link:
 // https://github.com/DDMAL/Neon/wiki/Neon%E2%80%90Verovio-File-Conversion
 
-export function zip<T> (array1: Array<T>, array2: Array<T>): Array<T> {
+export function zip<T>(array1: Array<T>, array2: Array<T>): Array<T> {
   const result = [];
-  for (let i = 0; i < (array1.length > array2.length ? array2.length : array1.length); i++) {
+  for (
+    let i = 0;
+    i < (array1.length > array2.length ? array2.length : array1.length);
+    i++
+  ) {
     result.push([array1[i], array2[i]]);
   }
   return result;
@@ -27,16 +31,24 @@ export function convertToNeon(staffBasedMei: string): string {
   const mei = meiDoc.documentElement;
   let nCol = 0;
 
-  const sections = Array.from(mei.querySelectorAll('section:not([type="neon-neume-line"])'));
+  const sections = Array.from(
+    mei.querySelectorAll('section:not([type="neon-neume-line"])'),
+  );
   for (const section of sections) {
     // Remove direct children pb & sb elements within section
     const pbs = section.querySelectorAll('pb');
-    pbs.forEach(pb => pb.remove());
+    pbs.forEach((pb) => pb.remove());
     const sbs = section.querySelectorAll('sb');
-    sbs.forEach(sb => sb.remove());
+    sbs.forEach((sb) => sb.remove());
 
-    const newStaff = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'staff');
-    const newLayer = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'layer');
+    const newStaff = meiDoc.createElementNS(
+      'http://www.music-encoding.org/ns/mei',
+      'staff',
+    );
+    const newLayer = meiDoc.createElementNS(
+      'http://www.music-encoding.org/ns/mei',
+      'layer',
+    );
     newStaff.setAttribute('n', '1');
     newLayer.setAttribute('n', '1');
     newStaff.appendChild(newLayer);
@@ -44,12 +56,17 @@ export function convertToNeon(staffBasedMei: string): string {
     // Add <pb>
     const surface = mei.querySelector('surface');
     const surfaceId = surface.getAttribute('xml:id');
-    const pb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'pb');
+    const pb = meiDoc.createElementNS(
+      'http://www.music-encoding.org/ns/mei',
+      'pb',
+    );
     pb.setAttribute('xml:id', 'm-' + uuidv4());
     pb.setAttribute('facs', '#' + surfaceId);
     newLayer.appendChild(pb);
 
-    const neonNeumeLineSections = Array.from(section.querySelectorAll('section[type="neon-neume-line"]'));
+    const neonNeumeLineSections = Array.from(
+      section.querySelectorAll('section[type="neon-neume-line"]'),
+    );
     let nStaff = 0;
     let lastCb: Element = null;
 
@@ -64,9 +81,15 @@ export function convertToNeon(staffBasedMei: string): string {
 
       // if staff has a new type value,
       // add cb before sb
-      if (staff.hasAttribute('type') && staff.getAttribute('type') != 'column' + nCol.toString()) {
+      if (
+        staff.hasAttribute('type') &&
+        staff.getAttribute('type') != 'column' + nCol.toString()
+      ) {
         nCol += 1;
-        const cb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'cb');
+        const cb = meiDoc.createElementNS(
+          'http://www.music-encoding.org/ns/mei',
+          'cb',
+        );
         cb.setAttribute('n', nCol.toString());
         cb.setAttribute('xml:id', 'm-' + uuidv4());
         cb.setAttribute('facs', '#m-' + uuidv4());
@@ -79,15 +102,20 @@ export function convertToNeon(staffBasedMei: string): string {
         lastCb = cb;
       }
 
-      const sb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'sb');
+      const sb = meiDoc.createElementNS(
+        'http://www.music-encoding.org/ns/mei',
+        'sb',
+      );
       sb.setAttribute('n', nStaff.toString());
       sb.setAttribute('facs', staff.getAttribute('facs'));
       sb.setAttribute('xml:id', staff.getAttribute('xml:id'));
 
       // Handle custos
       let custos: Element = undefined;
-      if ((newLayer.lastElementChild !== null) &&
-        (newLayer.lastElementChild.tagName === 'custos')) {
+      if (
+        newLayer.lastElementChild !== null &&
+        newLayer.lastElementChild.tagName === 'custos'
+      ) {
         custos = newLayer.removeChild(newLayer.lastElementChild);
       }
 
@@ -111,7 +139,10 @@ export function convertToNeon(staffBasedMei: string): string {
   // Add <colLayout>
   if (nCol) {
     const scoreDef = mei.querySelector('scoreDef');
-    const colLayout = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'colLayout');
+    const colLayout = meiDoc.createElementNS(
+      'http://www.music-encoding.org/ns/mei',
+      'colLayout',
+    );
     colLayout.setAttribute('xml:id', 'm-' + uuidv4());
     colLayout.setAttribute('n', nCol.toString());
     scoreDef.insertAdjacentElement('afterend', colLayout);
@@ -119,12 +150,22 @@ export function convertToNeon(staffBasedMei: string): string {
 
   return vkbeautify.xml(serializer.serializeToString(meiDoc));
 
-  function calculateAndAddZone(startElement: Element, endElement: Element | null, surface: Element) {
+  function calculateAndAddZone(
+    startElement: Element,
+    endElement: Element | null,
+    surface: Element,
+  ) {
     // Collect elements between startCb and endCb
-    const elementsBetween = collectAllElementsWithFacs(startElement.nextElementSibling, endElement);
+    const elementsBetween = collectAllElementsWithFacs(
+      startElement.nextElementSibling,
+      endElement,
+    );
 
     // Calculate zone attributes
-    const zone = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'zone');
+    const zone = meiDoc.createElementNS(
+      'http://www.music-encoding.org/ns/mei',
+      'zone',
+    );
     const BBox = calculateBBox(elementsBetween, surface);
     zone.setAttribute('lrx', BBox.lrx.toString());
     zone.setAttribute('lry', BBox.lry.toString());
@@ -136,7 +177,11 @@ export function convertToNeon(staffBasedMei: string): string {
     surface.insertBefore(zone, surface.firstElementChild);
   }
 
-  function collectAllElementsWithFacs(element: Element, endElement: Element, elementsBetween = []) {
+  function collectAllElementsWithFacs(
+    element: Element,
+    endElement: Element,
+    elementsBetween = [],
+  ) {
     if (element && element !== endElement) {
       // Push elements only if it has facs
       if (element.hasAttribute('facs')) elementsBetween.push(element);
@@ -148,7 +193,11 @@ export function convertToNeon(staffBasedMei: string): string {
       }
 
       if (element.nextElementSibling) {
-        collectAllElementsWithFacs(element.nextElementSibling, endElement, elementsBetween);
+        collectAllElementsWithFacs(
+          element.nextElementSibling,
+          endElement,
+          elementsBetween,
+        );
       }
     }
 
@@ -156,11 +205,16 @@ export function convertToNeon(staffBasedMei: string): string {
   }
 
   function calculateBBox(elements: Element[], surface: Element) {
-    let lrx = Infinity; let lry = 0; let ulx = 0; let uly = Infinity;
+    let lrx = Infinity;
+    let lry = 0;
+    let ulx = 0;
+    let uly = Infinity;
 
     elements.forEach((element) => {
-      const zone = Array.from(surface.children).find(zone =>
-        zone.getAttribute('xml:id') === element.getAttribute('facs').slice(1));
+      const zone = Array.from(surface.children).find(
+        (zone) =>
+          zone.getAttribute('xml:id') === element.getAttribute('facs').slice(1),
+      );
       lrx = Math.min(lrx, parseInt(zone.getAttribute('lrx')));
       lry = Math.max(lry, parseInt(zone.getAttribute('lry')));
       ulx = Math.max(ulx, parseInt(zone.getAttribute('ulx')));
@@ -171,13 +225,12 @@ export function convertToNeon(staffBasedMei: string): string {
   }
 }
 
-export function getSyllableText (syllable: Element): string {
+export function getSyllableText(syllable: Element): string {
   const syl = syllable.querySelector('syl')?.childNodes[0];
   let sylText: string;
   if (syl) {
     sylText = syl.nodeValue;
-  }
-  else {
+  } else {
     sylText = '◊';
   }
 
@@ -185,18 +238,26 @@ export function getSyllableText (syllable: Element): string {
 }
 
 /**
- * Check if zone is all-zero or not linked with glyphs
+ * Check if zone is all-zero, has negative coordinates, or not linked with glyphs
  */
-export function isInvalidBBox (mei: HTMLElement, zone: Element): [boolean, Element?] {
-  const isAllZero = (parseInt(zone.getAttribute('lrx')) === 0) &&
-    (parseInt(zone.getAttribute('lry')) === 0) &&
-    (parseInt(zone.getAttribute('ulx')) === 0) &&
-    (parseInt(zone.getAttribute('uly')) === 0);
-  const element = mei.querySelector(`*[facs="${'#'+zone.getAttribute('xml:id')}"]`);
-  if (isAllZero || !element) return [true, element];
+export function isInvalidBBox(
+  mei: HTMLElement,
+  zone: Element,
+): [boolean, Element?] {
+  const lrx = parseInt(zone.getAttribute('lrx'));
+  const lry = parseInt(zone.getAttribute('lry'));
+  const ulx = parseInt(zone.getAttribute('ulx'));
+  const uly = parseInt(zone.getAttribute('uly'));
+
+  const isAllZero = lrx === 0 && lry === 0 && ulx === 0 && uly === 0;
+  const hasNegativeCoordinates = lrx < 0 || lry < 0 || ulx < 0 || uly < 0;
+
+  const element = mei.querySelector(
+    `*[facs="${'#' + zone.getAttribute('xml:id')}"]`,
+  );
+  if (isAllZero || hasNegativeCoordinates || !element) return [true, element];
   return [false];
 }
-
 
 /**
  * Convert sb to staff for verovio
@@ -221,16 +282,30 @@ export function convertToVerovio(sbBasedMei: string): string {
   const surface = mei.querySelector('surface');
   let hasInvalidBBox = false;
   const zones = Array.from(surface.getElementsByTagName('zone'));
+  let invalidZonesInfo = 'The following zones are invalid: \n\n';
   for (const zone of zones) {
     const [isInvalid, element] = isInvalidBBox(mei, zone);
     if (isInvalid) {
-      if (element) element.parentNode.removeChild(element);
-      zone.parentNode.removeChild(zone);
       hasInvalidBBox = true;
+      invalidZonesInfo += `- Zone with xml:id: ${zone.getAttribute('xml:id')} `;
+
+      if (element) {
+        element.parentNode.removeChild(element);
+        invalidZonesInfo += `for &lt;${
+          element.tagName
+        }&gt; with xml:id: ${element.getAttribute('xml:id')}\n`;
+      } else {
+        invalidZonesInfo += 'is not linked with any glyphs\n';
+      }
+      zone.parentNode.removeChild(zone);
     }
   }
   if (hasInvalidBBox) {
-    Notification.queueNotification('Removed invalid zones contained in this file', 'warning');
+    Notification.queueNotification(
+      'Removed invalid zones contained in this file',
+      'warning',
+      invalidZonesInfo,
+    );
   }
 
   // Check if there is <colLayout> element and remove them
@@ -250,7 +325,9 @@ export function convertToVerovio(sbBasedMei: string): string {
   for (const syllable of syllables) {
     if (syllable.getElementsByTagName('neume').length === 0) {
       hasEmptySyllable = true;
-      emptySyllableInfo += `- &lt;${syllable.tagName}&gt; with xml:id: ${syllable.getAttribute('xml:id')}\n`;
+      emptySyllableInfo += `- &lt;${
+        syllable.tagName
+      }&gt; with xml:id: ${syllable.getAttribute('xml:id')}\n`;
     }
 
     // Check neume without neume component
@@ -259,7 +336,9 @@ export function convertToVerovio(sbBasedMei: string): string {
       const ncs = Array.from(neume.getElementsByTagName('nc'));
       if (ncs.length === 0) {
         hasEmptyNeume = true;
-        emptyNeumeInfo += `- &lt;${neume.tagName}&gt; with xml:id: ${neume.getAttribute('xml:id')}\n`;
+        emptyNeumeInfo += `- &lt;${
+          neume.tagName
+        }&gt; with xml:id: ${neume.getAttribute('xml:id')}\n`;
       } else {
         // To be removed in the future:
         // If nc has a @curve value, add a <liquescent> element
@@ -267,7 +346,7 @@ export function convertToVerovio(sbBasedMei: string): string {
           if (nc.hasAttribute('curve') && nc.children.length === 0) {
             const liq = meiDoc.createElementNS(
               'http://www.music-encoding.org/ns/mei',
-              'liquescent'
+              'liquescent',
             );
             liq.setAttribute('xml:id', 'm-' + uuidv4());
             nc.appendChild(liq);
@@ -278,10 +357,18 @@ export function convertToVerovio(sbBasedMei: string): string {
   }
 
   if (hasEmptySyllable) {
-    Notification.queueNotification('This file contains syllable(s) without neume!', 'warning', emptySyllableInfo);
+    Notification.queueNotification(
+      'This file contains syllable(s) without neume!',
+      'warning',
+      emptySyllableInfo,
+    );
   }
   if (hasEmptyNeume) {
-    Notification.queueNotification('This file contains neume(s) without neume component!', 'warning', emptyNeumeInfo);
+    Notification.queueNotification(
+      'This file contains neume(s) without neume component!',
+      'warning',
+      emptyNeumeInfo,
+    );
   }
 
   // Go section by section just in case
@@ -292,7 +379,10 @@ export function convertToVerovio(sbBasedMei: string): string {
     const originalStaves = Array.from(section.getElementsByTagName('staff'));
     for (const staff of originalStaves) {
       // Add a pb with a facs pointing to the surface
-      const newPb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'pb');
+      const newPb = meiDoc.createElementNS(
+        'http://www.music-encoding.org/ns/mei',
+        'pb',
+      );
       newPb.setAttribute('facs', '#' + surface.getAttribute('xml:id'));
       section.insertBefore(newPb, staff);
 
@@ -304,15 +394,15 @@ export function convertToVerovio(sbBasedMei: string): string {
       for (const sb of sbArray) {
         if (sb.parentElement.tagName !== 'layer') {
           const origSyllable: Element = sb.parentElement;
-          let neumeBehind = false, neumeAhead = false;
+          let neumeBehind = false,
+            neumeAhead = false;
           const childArray = Array.from(origSyllable.children);
           const sbIndex = childArray.indexOf(sb);
           for (const neume of origSyllable.getElementsByTagName('neume')) {
             const ind = childArray.indexOf(neume);
             if (ind < sbIndex) {
               neumeBehind = true;
-            }
-            else if (ind > sbIndex) {
+            } else if (ind > sbIndex) {
               neumeAhead = true;
             }
           }
@@ -321,16 +411,23 @@ export function convertToVerovio(sbBasedMei: string): string {
           // If in the middle, link syllables
           if (!neumeBehind && neumeAhead) {
             origSyllable.insertAdjacentElement('beforebegin', sb);
-          }
-          else if (neumeBehind && !neumeAhead) {
+          } else if (neumeBehind && !neumeAhead) {
             origSyllable.insertAdjacentElement('afterend', sb);
-          }
-          else if (neumeBehind && neumeAhead){
+          } else if (neumeBehind && neumeAhead) {
             // We may need to split the syllable here
-            const newSyllable = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'syllable');
+            const newSyllable = meiDoc.createElementNS(
+              'http://www.music-encoding.org/ns/mei',
+              'syllable',
+            );
             newSyllable.setAttribute('xml:id', 'm-' + uuidv4());
-            newSyllable.setAttribute('follows', '#' + origSyllable.getAttribute('xml:id'));
-            origSyllable.setAttribute('precedes', '#' + newSyllable.getAttribute('xml:id'));
+            newSyllable.setAttribute(
+              'follows',
+              '#' + origSyllable.getAttribute('xml:id'),
+            );
+            origSyllable.setAttribute(
+              'precedes',
+              '#' + newSyllable.getAttribute('xml:id'),
+            );
 
             const sbIndex = childArray.indexOf(sb);
 
@@ -353,8 +450,7 @@ export function convertToVerovio(sbBasedMei: string): string {
             for (const clef of newSyllable.getElementsByTagName('clef')) {
               newSyllable.insertAdjacentElement('beforebegin', clef);
             }
-          }
-          else {
+          } else {
             console.warn('NONE BEHIND NONE AHEAD');
             console.debug(origSyllable);
           }
@@ -366,42 +462,57 @@ export function convertToVerovio(sbBasedMei: string): string {
       let nCol = 0;
       for (let i = 0; i < sbs.length; i++) {
         const currentSb = sbs[i];
-        const nextSb = (sbs.length > i + 1) ? sbs[i + 1] : undefined;
+        const nextSb = sbs.length > i + 1 ? sbs[i + 1] : undefined;
 
-        const newSb = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'sb');
+        const newSb = meiDoc.createElementNS(
+          'http://www.music-encoding.org/ns/mei',
+          'sb',
+        );
         newSb.setAttribute('xml:id', 'm-' + uuidv4());
         newSb.setAttribute('facs', currentSb.getAttribute('facs'));
 
-
-        const newSection = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'section');
+        const newSection = meiDoc.createElementNS(
+          'http://www.music-encoding.org/ns/mei',
+          'section',
+        );
         newSection.setAttribute('type', 'neon-neume-line');
 
-        const newStaff = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'staff');
+        const newStaff = meiDoc.createElementNS(
+          'http://www.music-encoding.org/ns/mei',
+          'staff',
+        );
         copyAttributes(currentSb, newStaff);
         newStaff.setAttribute('n', '1');
         const currentIdx = layerChildren.indexOf(currentSb);
         if (hasCols) {
-          if (layerChildren.at(currentIdx-1).tagName === 'cb') {
+          if (layerChildren.at(currentIdx - 1).tagName === 'cb') {
             nCol += 1;
             // Remove cb element and its zone
-            const cb = layerChildren.at(currentIdx-1);
+            const cb = layerChildren.at(currentIdx - 1);
             const cbFacs = cb.getAttribute('facs');
-            const cbZone = Array.from(surface.querySelectorAll('zone'))
-              .find(zone => zone.getAttribute('xml:id') === cbFacs.slice(1));
+            const cbZone = Array.from(surface.querySelectorAll('zone')).find(
+              (zone) => zone.getAttribute('xml:id') === cbFacs.slice(1),
+            );
             cb.parentNode.removeChild(cb);
             cbZone.parentNode.removeChild(cbZone);
           }
           newStaff.setAttribute('type', 'column' + nCol.toString());
         }
 
-        const newLayer = meiDoc.createElementNS('http://www.music-encoding.org/ns/mei', 'layer');
+        const newLayer = meiDoc.createElementNS(
+          'http://www.music-encoding.org/ns/mei',
+          'layer',
+        );
         newLayer.setAttribute('n', '1');
         newLayer.setAttribute('xml:id', 'm-' + uuidv4());
         newSection.appendChild(newStaff);
         newStaff.appendChild(newLayer);
 
         const childrenArray = Array.from(layer.children);
-        const copyArray = childrenArray.slice(childrenArray.indexOf(currentSb) + 1, childrenArray.indexOf(nextSb));
+        const copyArray = childrenArray.slice(
+          childrenArray.indexOf(currentSb) + 1,
+          childrenArray.indexOf(nextSb),
+        );
 
         for (const child of copyArray) {
           newLayer.appendChild(child);
@@ -413,7 +524,10 @@ export function convertToVerovio(sbBasedMei: string): string {
           const lastElement = childrenArray.at(-1);
           const facsChildren = collectFacsChildren(lastElement, []);
           for (const child of facsChildren) {
-            const zone = zones.find(z => z.getAttribute('xml:id') == child.getAttribute('facs').slice(1));
+            const zone = zones.find(
+              (z) =>
+                z.getAttribute('xml:id') == child.getAttribute('facs').slice(1),
+            );
             if (zone && zones.length > 1) {
               zone.parentNode.removeChild(zone);
             }
@@ -430,7 +544,8 @@ export function convertToVerovio(sbBasedMei: string): string {
   // Second pass on all syllables to handle clefs and custos that might remain
   const newSyllables = Array.from(mei.getElementsByTagName('syllable'));
   let invalidLinked = false;
-  let invalidLinkedInfo = 'The following linked syllables are not encoded correctly: \n\n';
+  let invalidLinkedInfo =
+    'The following linked syllables are not encoded correctly: \n\n';
   let invalidOblique = false;
   let invalidObliqueInfo = 'The following obliques are incomplete: \n\n';
   for (const syllable of mei.querySelectorAll('syllable')) {
@@ -472,17 +587,25 @@ export function convertToVerovio(sbBasedMei: string): string {
     }
   }
   if (invalidOblique) {
-    Notification.queueNotification('This file contains incomplete oblique(s)', 'error', invalidObliqueInfo);
+    Notification.queueNotification(
+      'This file contains incomplete oblique(s)',
+      'error',
+      invalidObliqueInfo,
+    );
   }
   if (invalidLinked) {
-    Notification.queueNotification('This file contains invalid linked syllable(s)', 'error', invalidLinkedInfo);
+    Notification.queueNotification(
+      'This file contains invalid linked syllable(s)',
+      'error',
+      invalidLinkedInfo,
+    );
   }
 
   const serializer = new XMLSerializer();
   return vkbeautify.xml(serializer.serializeToString(meiDoc));
 }
 
-export function checkOutOfBoundsGlyphs (meiString: string): void {
+export function checkOutOfBoundsGlyphs(meiString: string): void {
   const parser = new DOMParser();
   const meiDoc = parser.parseFromString(meiString, 'text/xml');
   const mei = meiDoc.documentElement;
@@ -490,31 +613,46 @@ export function checkOutOfBoundsGlyphs (meiString: string): void {
   // Check for out-of-bound glyphs
   const zones = Array.from(mei.querySelectorAll('zone'));
   const dimensions = mei.querySelector('surface');
-  const meiLrx = Number(dimensions.getAttribute('lrx')), meiLry = Number(dimensions.getAttribute('lry'));
+  const meiLrx = Number(dimensions.getAttribute('lrx')),
+    meiLry = Number(dimensions.getAttribute('lry'));
 
   function isAttrOutOfBounds(zone: Element, attr: string): boolean {
     const coord = Number(zone.getAttribute(attr));
-    const comp = (attr == 'lrx' || attr == 'ulx') ? meiLrx : meiLry;
+    const comp = attr == 'lrx' || attr == 'ulx' ? meiLrx : meiLry;
     return coord < 0 || coord > comp;
   }
 
   let info = 'The following glyphs are out of bounds: \n\n';
 
   const hasOutOfBounds = zones.some((zone) => {
-    const isOutOfBounds = ['ulx', 'uly', 'lrx', 'lry'].some((attr) => isAttrOutOfBounds(zone, attr));
+    const isOutOfBounds = ['ulx', 'uly', 'lrx', 'lry'].some((attr) =>
+      isAttrOutOfBounds(zone, attr),
+    );
     if (isOutOfBounds) {
-      const element = mei.querySelector(`*[facs="${'#'+zone.getAttribute('xml:id')}"]`);
-      info += `- &lt;${element.tagName}&gt; with xml:id: ${element.getAttribute('xml:id')}\n`;
+      const element = mei.querySelector(
+        `*[facs="${'#' + zone.getAttribute('xml:id')}"]`,
+      );
+      info += `- &lt;${element.tagName}&gt; with xml:id: ${element.getAttribute(
+        'xml:id',
+      )}\n`;
     }
     return isOutOfBounds;
   });
 
   if (hasOutOfBounds) {
-    Notification.queueNotification('This folio contains glyph(s) placed out-of-bounds!', 'warning', info);
+    Notification.queueNotification(
+      'This folio contains glyph(s) placed out-of-bounds!',
+      'warning',
+      info,
+    );
   }
 }
 
-function checkPrecedesSyllable (syllable: Element, idx: number, syllables: Element[]): string {
+function checkPrecedesSyllable(
+  syllable: Element,
+  idx: number,
+  syllables: Element[],
+): string {
   // Get xml:id of the next syllable (without the #, if it exists)
   const nextSyllableId = syllable.getAttribute('precedes').replace('#', '');
 
@@ -531,17 +669,32 @@ function checkPrecedesSyllable (syllable: Element, idx: number, syllables: Eleme
 
   // Condition 1: The next (following) syllable cannot be found
   if (!nextSyllable) {
-    return `- &lt;${syllable.tagName}&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')} is missing the following part\n`;
+    return `- &lt;${syllable.tagName}&gt; (${getSyllableText(
+      syllable,
+    )}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is missing the following part\n`;
   }
 
   // Condition 2: The next syllable has been found, but the @follows attribute does NOT EXIST
   if (!nextSyllable.hasAttribute('follows')) {
-    return `- The following syllable of &lt;${syllable.tagName}&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')} is not linked to any syllable\n`;
+    return `- The following syllable of &lt;${
+      syllable.tagName
+    }&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is not linked to any syllable\n`;
   }
 
   // Condition 3: The next syllable's @follows attribute exists, but it is not in the correct format #id
-  if (nextSyllable.getAttribute('follows') != '#' + syllable.getAttribute('xml:id')) {
-    return `- The following syllable of &lt;${syllable.tagName}&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')} is linked to the wrong syllable\n`;
+  if (
+    nextSyllable.getAttribute('follows') !=
+    '#' + syllable.getAttribute('xml:id')
+  ) {
+    return `- The following syllable of &lt;${
+      syllable.tagName
+    }&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is linked to the wrong syllable\n`;
   }
 
   // Condition 4:
@@ -554,40 +707,68 @@ function checkPrecedesSyllable (syllable: Element, idx: number, syllables: Eleme
       .map((syllable) => getSyllableText(syllable));
 
     const sylsText = [sylText, ...unexpectedSylsText].join(' - ');
-    return `- Unexpected syllable(s) inside toggle-linked &lt;${syllable.tagName}&gt; (${sylsText}) with xml:id: ${syllable.getAttribute('xml:id')} is linked to the wrong syllable\n`;
+    return `- Unexpected syllable(s) inside toggle-linked &lt;${
+      syllable.tagName
+    }&gt; (${sylsText}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is linked to the wrong syllable\n`;
   }
 }
 
-function checkFollowsSyllable (syllable: Element, syllables: Element[]): string {
+function checkFollowsSyllable(syllable: Element, syllables: Element[]): string {
   const prevSyllableId = syllable.getAttribute('follows').replace('#', '');
-  const prevSyllable = syllables.find((syllable) => syllable.getAttribute('xml:id') === prevSyllableId);
+  const prevSyllable = syllables.find(
+    (syllable) => syllable.getAttribute('xml:id') === prevSyllableId,
+  );
 
   // Condition 1: The previous syllable does not exist
   if (!prevSyllable) {
-    return `- &lt;${syllable.tagName}&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')} is missing the preceding part\n`;
+    return `- &lt;${syllable.tagName}&gt; (${getSyllableText(
+      syllable,
+    )}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is missing the preceding part\n`;
   }
 
   // Condition 2: The previous syllable exists, but the @precedes attribute does NOT EXIST
   if (!prevSyllable.hasAttribute('precedes')) {
-    return `- The preceding syllable of &lt;${syllable.tagName}&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')} is not linked to any syllable\n`;
+    return `- The preceding syllable of &lt;${
+      syllable.tagName
+    }&gt; (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is not linked to any syllable\n`;
   }
 
   // Condition 3: The previous syllable's @precedes attribute exists, but it is not in the correct format #id
-  if (prevSyllable.getAttribute('precedes') != '#' + syllable.getAttribute('xml:id')) {
-    return `- The preceding syllable of &lt;${syllable.tagName}&gt; (${getSyllableText(prevSyllable)}) with xml:id: ${syllable.getAttribute('xml:id')} is linked to the wrong syllable\n`;
+  if (
+    prevSyllable.getAttribute('precedes') !=
+    '#' + syllable.getAttribute('xml:id')
+  ) {
+    return `- The preceding syllable of &lt;${
+      syllable.tagName
+    }&gt; (${getSyllableText(
+      prevSyllable,
+    )}) with xml:id: ${syllable.getAttribute(
+      'xml:id',
+    )} is linked to the wrong syllable\n`;
   }
 }
 
-function checkOblique (syllable: Element): string {
+function checkOblique(syllable: Element): string {
   const ncs = syllable.querySelectorAll('nc');
   let ncIdx = 0;
   let info = '';
   while (ncIdx < ncs.length) {
     if (ncs[ncIdx].getAttribute('ligated')) {
-      if ((ncIdx < ncs.length-1 && !ncs[ncIdx+1].getAttribute('ligated')) || (ncIdx == ncs.length-1)) {
+      if (
+        (ncIdx < ncs.length - 1 && !ncs[ncIdx + 1].getAttribute('ligated')) ||
+        ncIdx == ncs.length - 1
+      ) {
         // If nc is ligated, and the next nc is not
         // Or, nc is ligated, but already at the end (there is no next)
-        info += `- The oblique in syllable (${getSyllableText(syllable)}) with xml:id: ${syllable.getAttribute('xml:id')}\n`;
+        info += `- The oblique in syllable (${getSyllableText(
+          syllable,
+        )}) with xml:id: ${syllable.getAttribute('xml:id')}\n`;
       }
       ncIdx += 2;
     }
@@ -602,7 +783,9 @@ export function removeColumnLabel(mei: string): string {
   const meiDoc = parser.parseFromString(mei, 'text/xml');
   const meiForValidation = meiDoc.documentElement;
 
-  for (const staff of Array.from(meiForValidation.getElementsByTagName('staff'))) {
+  for (const staff of Array.from(
+    meiForValidation.getElementsByTagName('staff'),
+  )) {
     if (staff.hasAttribute('type')) {
       staff.removeAttribute('type');
     }
