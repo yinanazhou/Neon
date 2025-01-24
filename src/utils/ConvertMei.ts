@@ -290,10 +290,10 @@ export function convertToVerovio(sbBasedMei: string): string {
       invalidZonesInfo += `- Zone with xml:id: ${zone.getAttribute('xml:id')} `;
 
       if (element) {
-        element.parentNode.removeChild(element);
         invalidZonesInfo += `for &lt;${
           element.tagName
         }&gt; with xml:id: ${element.getAttribute('xml:id')}\n`;
+        element.parentNode.removeChild(element);
       } else {
         invalidZonesInfo += 'is not linked with any glyphs\n';
       }

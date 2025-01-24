@@ -1,14 +1,12 @@
 import * as Color from './Color';
-import {
-  updateHighlight,
-  getHighlightType,
-} from '../DisplayPanel/DisplayControls';
+import { updateHighlight } from '../DisplayPanel/DisplayControls';
 import * as Grouping from '../SquareEdit/Grouping';
 import { resize } from './Resize';
 import { Attributes, SelectionType } from '../Types';
 import NeonView from '../NeonView';
 import DragHandler from './DragHandler';
 import * as SelectOptions from '../SquareEdit/SelectOptions';
+import * as Notification from '../utils/Notification';
 import * as d3 from 'd3';
 
 /**
@@ -713,7 +711,18 @@ export async function selectAll(
       switch (groups.length) {
         case 1:
           // TODO change context if it is only a neume/nc.
-          SelectOptions.triggerSyllableActions('singleSelect');
+          //  Check if the selected syllable contains a <syl> element
+          if (groups[0].querySelector('.syl > rect') === null) {
+            Notification.queueNotification(
+              'The selected syllable does not contain a &lt;syl&gt; element, please insert one using button "Add Syllable Text".',
+              'warning',
+            );
+            SelectOptions.triggerSyllableActions('noSyl');
+            SelectOptions.addAddSylListener();
+          } else {
+            SelectOptions.triggerSyllableActions('singleSelect');
+          }
+
           break;
 
         default:

@@ -412,6 +412,18 @@ export const groupingMenu = {
 /* BGINNING OF MODAL WINDOW CONTENT SECTION */
 
 /**
+ * HTML for Add Syllable Text modal window
+ */
+export const addTextModal = `<div class="neon-modal-window-content" id="neon-modal-window-content-edit-text">
+        <label for="neon-modal-window-edit-text-input" id="neon-modal-window-edit-text-label">Enter Syllable Text:</label>
+        <input id="neon-modal-window-edit-text-input" type="text">
+        <div id="neon-modal-window-edit-text-btns">
+        <div class="neon-modal-window-btn" id="neon-modal-window-edit-text-cancel">Cancel</div>
+        <div class="neon-modal-window-btn" id="neon-modal-window-edit-text-add">Add</div>
+        </div>
+    </div>`;
+
+/**
  * HTML for Edit Syllable Text modal window
  */
 export const editTextModal = `<div class="neon-modal-window-content" id="neon-modal-window-content-edit-text">
