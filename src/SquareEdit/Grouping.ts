@@ -110,6 +110,18 @@ function containsLinked(
 function hasInvalidLinkedSyllable(
   elements: Array<SVGGraphicsElement>,
 ): boolean {
+  // Sort elements based on their order in the DOM
+  elements.sort((a, b) => {
+    if (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) {
+      return -1;
+    } else if (
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING
+    ) {
+      return 1;
+    }
+    return 0;
+  });
+
   for (let idx = 0; idx < elements.length; idx++) {
     const syllable = elements.at(idx);
     if (syllable.hasAttribute('mei:precedes')) {

@@ -1,8 +1,5 @@
 import * as Color from './Color';
-import {
-  updateHighlight,
-  getHighlightType,
-} from '../DisplayPanel/DisplayControls';
+import { updateHighlight } from '../DisplayPanel/DisplayControls';
 import * as Grouping from '../SquareEdit/Grouping';
 import { resize } from './Resize';
 import { Attributes, SelectionType } from '../Types';
