@@ -376,17 +376,33 @@ export function convertToVerovio(sbBasedMei: string): string {
     }
   }
 
-  // Check syllable without neume
-  const syllables = Array.from(mei.getElementsByTagName('syllable'));
-  for (const syllable of syllables) {
-    if (syllable.getElementsByTagName('neume').length === 0) {
-      // syllable.remove();
-      const id = syllable.getAttribute('xml:id');
-      Notification.queueNotification(
-        `This file contains a syllable without neume!<br/>ID: ${id}`,
-        'warning',
-      );
-    }
+  if (hasEmptySyllable) {
+    Notification.queueNotification(
+      'This file contains syllable(s) without neume!',
+      'warning',
+      emptySyllableInfo,
+    );
+  }
+  if (hasEmptyNeume) {
+    Notification.queueNotification(
+      'This file contains neume(s) without neume component!',
+      'warning',
+      emptyNeumeInfo,
+    );
+  }
+  if (hasInvalidDivLine) {
+    Notification.queueNotification(
+      'This file contains divLine(s) inside empty syllable(s)!',
+      'warning',
+      invalidDivLineInfo,
+    );
+  }
+  if (hasInvalidAccid) {
+    Notification.queueNotification(
+      'This file contains accid(s) inside empty syllable(s)!',
+      'warning',
+      invalidAccidInfo,
+    );
   }
 
   // Go section by section just in case
