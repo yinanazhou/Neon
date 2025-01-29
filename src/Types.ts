@@ -12,165 +12,173 @@ export type Attributes = {
 };
 
 export type ClefAttributes = {
-  line: string
-  shape: 'C' | 'F'
-  'dis.place'?: 'above' | 'below'
-  dis?: string
+  line: string;
+  shape: 'C' | 'F';
+  'dis.place'?: 'above' | 'below';
+  dis?: string;
+};
+
+export type AddSylAction = {
+  action: 'addSyl';
+  param: {
+    elementId: string;
+    sylText: string;
+  };
 };
 
 /**
  * Drag editing action sent to verovio as described [here](https://github.com/DDMAL/Neon/wiki/Toolkit-Actions).
  */
 export type DragAction = {
-  action: 'drag',
+  action: 'drag';
   param: {
-    elementId: string,
-    x: number,
+    elementId: string;
+    x: number;
     y: number;
   };
 };
 
 /** Resize editing action sent to verovio as described [here](https://github.com/DDMAL/Neon/wiki/Toolkit-Actions). */
 export type ResizeAction = {
-  action: 'resize',
+  action: 'resize';
   param: {
-    elementId: string,
-    ulx: number,
-    uly: number,
-    lrx: number,
+    elementId: string;
+    ulx: number;
+    uly: number;
+    lrx: number;
     lry: number;
   };
 };
 
 export type ResizeRotateAction = {
-  action: 'resizeRotate',
+  action: 'resizeRotate';
   param: {
-    elementId: string,
-    ulx: number,
-    uly: number,
-    lrx: number,
-    lry: number,
+    elementId: string;
+    ulx: number;
+    uly: number;
+    lrx: number;
+    lry: number;
     rotate: number;
   };
 };
 
 export type InsertAction = {
-  action: 'insert',
+  action: 'insert';
   param: {
-    elementType: string,
-    staffId: string | 'auto',
-    ulx?: number,
-    uly?: number,
-    lrx?: number,
-    lry?: number,
+    elementType: string;
+    staffId: string | 'auto';
+    ulx?: number;
+    uly?: number;
+    lrx?: number;
+    lry?: number;
     // TODO: attributes are currently never used yet in Neon
-    attributes?: { shape: string; } | Record<string, string>;
+    attributes?: { shape: string } | Record<string, string>;
   };
 };
 
 export type InsertToSyllableAction = {
-  action: 'insertToSyllable',
+  action: 'insertToSyllable';
   param: {
     elementId: string;
   };
 };
 
 export type MoveOutsideSyllableAction = {
-  action: 'moveOutsideSyllable',
+  action: 'moveOutsideSyllable';
   param: {
     elementId: string;
   };
 };
 
 export type DisplaceClefOctaveAction = {
-  action: 'displaceClefOctave',
+  action: 'displaceClefOctave';
   param: {
-    elementId: string,
+    elementId: string;
     direction: 'above' | 'below';
   };
 };
 
 export type RemoveAction = {
-  action: 'remove',
+  action: 'remove';
   param: {
     elementId: string;
   };
 };
 
 export type GroupingAction = {
-  action: 'group',
+  action: 'group';
   param: {
-    groupType: 'neume' | 'nc',
+    groupType: 'neume' | 'nc';
     elementIds: string[];
   };
 };
 
 export type UngroupingAction = {
-  action: 'ungroup',
+  action: 'ungroup';
   param: {
-    groupType: 'neume' | 'nc',
+    groupType: 'neume' | 'nc';
     elementIds: string[];
   };
 };
 
 export type SetAction = {
-  action: 'set',
+  action: 'set';
   param: {
-    elementId: string,
-    attrType: string,
+    elementId: string;
+    attrType: string;
     attrValue: string;
   };
 };
 
 export type SetLiquescentAction = {
-  action: 'setLiquescent',
+  action: 'setLiquescent';
   param: {
-    elementId: string,
-    curve: string,
+    elementId: string;
+    curve: string;
   };
 };
 
 export type MergeAction = {
-  action: 'merge',
+  action: 'merge';
   param: {
     elementIds: string[];
   };
 };
 
 export type SplitAction = {
-  action: 'split',
+  action: 'split';
   param: {
-    elementId: string,
+    elementId: string;
     x: number;
   };
 };
 
 export type SplitNeumeAction = {
-  action: 'splitNeume',
+  action: 'splitNeume';
   param: {
-    elementId: string,
+    elementId: string;
     ncId: string;
   };
 };
 
 export type SetTextAction = {
-  action: 'setText',
+  action: 'setText';
   param: {
-    elementId: string,
+    elementId: string;
     text: string;
   };
 };
 
 export type SetClefAction = {
-  action: 'setClef',
+  action: 'setClef';
   param: {
-    elementId: string,
+    elementId: string;
     shape: string;
   };
 };
 
 export type ToggleLigatureAction = {
-  action: 'toggleLigature',
+  action: 'toggleLigature';
   param: {
     elementIds: string[];
   };
@@ -178,39 +186,39 @@ export type ToggleLigatureAction = {
 
 // MIGHT BE USELESS: does not exist in Verovio
 export type ChangeSkewAction = {
-  action: 'changeSkew',
+  action: 'changeSkew';
   param: {
-    elementId: string,
-    dy: number,
+    elementId: string;
+    dy: number;
     rightSide: boolean;
   };
 };
 
 export type ChangeStaffAction = {
-  action: 'changeStaff',
+  action: 'changeStaff';
   param: {
     elementId: string;
   };
 };
 
 export type ChangeStaffToAction = {
-  action: 'changeStaffTo',
+  action: 'changeStaffTo';
   param: {
-    elementId: string,
-    staffId: string,
+    elementId: string;
+    staffId: string;
   };
 };
 
 export type ChangeGroupAction = {
-  action: 'changeGroup',
+  action: 'changeGroup';
   param: {
-    elementId: string,
+    elementId: string;
     contour: string;
   };
 };
 
 export type MatchHeightAction = {
-  action: 'matchHeight',
+  action: 'matchHeight';
   param: {
     elementId: string;
   };
@@ -244,36 +252,36 @@ export type EditorAction =
   | MatchHeightAction;
 
 export type ChainAction = {
-  action: 'chain',
+  action: 'chain';
   param: EditorAction[];
 };
 
 /** A message sent to the verovio web worker. */
 export type VerovioMessage = {
-  action: string,
-  id: string,
-  mei?: string,
-  elementId?: string,
+  action: string;
+  id: string;
+  mei?: string;
+  elementId?: string;
   editorAction?: EditorAction;
 };
 
 export type VerovioResponse = {
-  id: string,
-  svg?: string,
-  attributes?: Attributes,
-  result?: boolean,
-  mei?: string,
+  id: string;
+  svg?: string;
+  attributes?: Attributes;
+  result?: boolean;
+  mei?: string;
   info?: {
-    status: string,
+    status: string;
     message: string;
   };
 };
 
 /** Modeled after the [W3 Web Annotation Data Model.](https://www.w3.org/TR/annotation-model/) */
 export type WebAnnotation = {
-  id: string,
-  type: string,
-  body: string,
+  id: string;
+  type: string;
+  body: string;
   target: string;
 };
 
@@ -281,36 +289,38 @@ export type WebAnnotation = {
  * see https://github.com/DDMAL/Neon/blob/gh-pages/contexts/1/manifest.JSON-LD
  */
 export type NeonContext = {
-  schema: string,
-  title: string,
-  timestamp: string,
+  schema: string;
+  title: string;
+  timestamp: string;
   image: {
-    '@id': string,
-    '@type': string,
-  },
+    '@id': string;
+    '@type': string;
+  };
   mei_annotations: {
-    '@id': string,
-    '@type': string,
+    '@id': string;
+    '@type': string;
     '@container': string;
   };
 };
 
 /** Required fields in the JSON-LD Neon manifest. */
 export type NeonManifest = {
-  '@context': Array<string | NeonContext> | string,
-  '@id': string,
-  title: string,
-  timestamp: string,
-  image: string,
+  '@context': Array<string | NeonContext> | string;
+  '@id': string;
+  title: string;
+  timestamp: string;
+  image: string;
   mei_annotations: WebAnnotation[];
 };
 
-
 export type AllDocs = {
-  offset?: number,
-  total_rows?: number,
+  offset?: number;
+  total_rows?: number;
   rows?: {
-    doc?: PouchDB.Core.ExistingDocument<PouchDB.Core.AllDocsMeta> & { type?: string; name?: string; };
+    doc?: PouchDB.Core.ExistingDocument<PouchDB.Core.AllDocsMeta> & {
+      type?: string;
+      name?: string;
+    };
     id: string;
     key: string;
     value: {
@@ -321,15 +331,15 @@ export type AllDocs = {
 };
 
 export type Doc = {
-  _id: string,
-  name: string,
-  type: string,
+  _id: string;
+  name: string;
+  type: string;
   _attachments: {
     manifest: {
-      content_type: string,
-      data: Blob
-    }
-  },
+      content_type: string;
+      data: Blob;
+    };
+  };
 };
 
 export type uploadsInfo = {
@@ -341,18 +351,50 @@ export type uploadsInfo = {
 export type HTMLSVGElement = HTMLElement & SVGSVGElement;
 
 /** "Selection By" type */
-export type SelectionType = 'selByStaff' | 'selByNeume' | 'selByNc' | 'selByLayerElement' | 'selBySyllable' | 'selByBBox' | 'selByLayerElement';
+export type SelectionType =
+  | 'selByStaff'
+  | 'selByNeume'
+  | 'selByNc'
+  | 'selByLayerElement'
+  | 'selBySyllable'
+  | 'selByBBox'
+  | 'selByLayerElement';
 
 /** Highlight grouping type  */
-export type GroupingType = 'column' | 'staff' | 'syllable' | 'neume' | 'layerElement' | 'selection' | 'none';
+export type GroupingType =
+  | 'column'
+  | 'staff'
+  | 'syllable'
+  | 'neume'
+  | 'layerElement'
+  | 'selection'
+  | 'none';
 
 /** User mode type  */
 export type UserType = 'insert' | 'edit' | 'viewer';
 
 /** Insert mode type  */
-export type InsertType = 'punctum' | 'virga' | 'virgaReversed' | 'diamond' | 'custos' 
-| 'cClef' | 'fClef' | 'liquescentA' | 'liquescentC' | 'flat' | 'natural' | 'divLineMaxima' 
-| 'pes' | 'clivis' | 'scandicus' | 'climacus' | 'torculus' | 'porrectus' | 'pressus' | 'staff';
+export type InsertType =
+  | 'punctum'
+  | 'virga'
+  | 'virgaReversed'
+  | 'diamond'
+  | 'custos'
+  | 'cClef'
+  | 'fClef'
+  | 'liquescentA'
+  | 'liquescentC'
+  | 'flat'
+  | 'natural'
+  | 'divLineMaxima'
+  | 'pes'
+  | 'clivis'
+  | 'scandicus'
+  | 'climacus'
+  | 'torculus'
+  | 'porrectus'
+  | 'pressus'
+  | 'staff';
 
 /** Insert tab type  */
 export type InsertTabType = 'primitiveTab' | 'groupingTab' | 'systemTab';
