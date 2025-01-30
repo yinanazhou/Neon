@@ -81,19 +81,24 @@ importScripts(
 );
 
 verovio.module.onRuntimeInitialized = () => {
-  toolkit = new verovio.toolkit();
-  toolkit.setOptions({
-    inputFrom: 'mei',
-    footer: 'none',
-    header: 'none',
-    pageMarginLeft: 0,
-    pageMarginTop: 0,
-    font: 'Bravura',
-    useFacsimile: false,
-  });
-  console.debug('VerovioWorker: toolkit initialized');
-  onmessage = handleNeonEvent;
-  for (const message of backlog) {
-    handleNeonEvent(message);
+  console.log('VerovioWorker: initializing toolkit');
+  try {
+    toolkit = new verovio.toolkit();
+    toolkit.setOptions({
+      inputFrom: 'mei',
+      footer: 'none',
+      header: 'none',
+      pageMarginLeft: 0,
+      pageMarginTop: 0,
+      font: 'Bravura',
+      useFacsimile: false,
+    });
+    console.debug('VerovioWorker: toolkit initialized');
+    onmessage = handleNeonEvent;
+    for (const message of backlog) {
+      handleNeonEvent(message);
+    }
+  } catch (error) {
+    console.error('VerovioWorker: error initializing toolkit', error);
   }
 };
