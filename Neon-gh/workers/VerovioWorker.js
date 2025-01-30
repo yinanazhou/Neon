@@ -98,6 +98,7 @@ verovio.module.onRuntimeInitialized = () => {
     for (const message of backlog) {
       handleNeonEvent(message);
     }
+    postMessage('ready');
   } catch (error) {
     console.error('VerovioWorker: error initializing toolkit', error);
   }
